@@ -14,20 +14,25 @@ Rassegne stampa complete per artisti. Ricerca intelligente con Perplexity API, c
 
 ## Piani
 
-| Piano   | Prezzo   | Ricerche/mese | Export              |
-|---------|----------|---------------|---------------------|
-| Free    | €0       | 5             | PDF, JSON           |
-| Pro     | €7,99/mo | 50            | PDF, Excel, JSON, CSV |
-| Business| €19,99/mo| 200           | Tutti + API access  |
+| Piano   | Prezzo   | Ricerche/mese | Export                    |
+|---------|----------|---------------|---------------------------|
+| Free    | €0       | 5             | PDF, Excel, JSON, CSV     |
+| Pro     | €7,99/mo | 50            | Stesso export, più ricerche |
+| Business| €19,99/mo| 200           | Tutti + API access        |
 
 ## Setup
 
 1. Copia `.env.example` in `.env.local`
 2. Configura le variabili (Clerk, Perplexity, Neon, Stripe)
-3. Crea le tabelle su Neon: esegui `scripts/init-db.sql` nel SQL Editor di Neon
+3. **Database:** la prima volta che l’app usa Neon, crea automaticamente le tabelle (`users`, `searches`, `usage_tracking`). Puoi comunque eseguire `scripts/init-db.sql` a mano se preferisci.
 4. Crea prodotti e prezzi su Stripe (Pro €7,99/mo, Business €19,99/mo)
 5. Configura webhook Stripe: `POST /api/stripe/webhook`
-6. Configura webhook Clerk: `POST /api/webhooks/clerk` (evento `user.created`)
+6. **Webhook Clerk** (Dashboard → Webhooks → Add endpoint):
+   - **URL** (sostituisci con il tuo dominio):  
+     `https://TUO_PROGETTO.vercel.app/api/webhooks/clerk`  
+     In locale usa un tunnel (es. ngrok): `https://xxxx.ngrok-free.app/api/webhooks/clerk`
+   - **Eventi**: `user.created` (e opzionalmente `user.updated`)
+   - Copia il **Signing secret** in `CLERK_WEBHOOK_SECRET` (`.env.local` / Vercel)
 
 ```bash
 npm install

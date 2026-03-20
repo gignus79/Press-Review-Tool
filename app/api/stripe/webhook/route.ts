@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
 import { stripe } from '@/lib/stripe';
-import { sql } from '@/lib/db';
+import { sql, ensureSchema } from '@/lib/db';
 import Stripe from 'stripe';
 
 export async function POST(req: Request) {
@@ -23,6 +23,7 @@ export async function POST(req: Request) {
   }
 
   try {
+    await ensureSchema();
     switch (event.type) {
       case 'checkout.session.completed': {
         const session = event.data.object as Stripe.Checkout.Session;

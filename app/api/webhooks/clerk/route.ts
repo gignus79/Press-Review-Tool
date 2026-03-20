@@ -1,7 +1,7 @@
 import { Webhook } from 'svix';
 import { headers } from 'next/headers';
 import { NextResponse } from 'next/server';
-import { sql } from '@/lib/db';
+import { sql, ensureSchema } from '@/lib/db';
 import { randomUUID } from 'crypto';
 
 export async function POST(req: Request) {
@@ -35,6 +35,7 @@ export async function POST(req: Request) {
   }
 
   if (event.type === 'user.created') {
+    await ensureSchema();
     const userId = event.data.id;
     const email = event.data.email_addresses?.[0]?.email_address || '';
 

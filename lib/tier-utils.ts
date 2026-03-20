@@ -3,8 +3,10 @@ export type Tier = 'free' | 'pro' | 'business';
 export const TIER_LIMITS = {
   free: {
     searchesPerMonth: 5,
-    exports: ['pdf', 'json'] as const,
-    history: false,
+    /** Tutti i formati export (PDF, Excel, JSON, CSV) anche sul tier Free — limiti su ricerche. */
+    exports: ['pdf', 'xlsx', 'json', 'csv'] as const,
+    /** Storico sidebar + pagina /history per tutti i tier (differenziazione su limite ricerche / funzioni Pro). */
+    history: true,
     apiAccess: false,
   },
   pro: {

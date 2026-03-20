@@ -1,12 +1,13 @@
 import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
-import { sql } from '@/lib/db';
+import { sql, ensureSchema } from '@/lib/db';
 import { getSearchLimit } from '@/lib/tier-utils';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
   if (!userId) return null;
 
+  await ensureSchema();
   const userResult = (await sql`
     SELECT id, tier FROM users WHERE clerk_user_id = ${userId}
   `) as Array<{ id: string; tier: string }>;
@@ -25,39 +26,44 @@ export default async function DashboardPage() {
   const remaining = Math.max(0, limit - searchCount);
 
   return (
-    <div className="max-w-4xl mx-auto px-4 py-12">
-      <h1 className="text-2xl font-bold text-[var(--tosky-dark)] mb-6">
+    <div className="max-w-4xl mx-auto px-3 py-8 sm:px-4 sm:py-10 md:py-12">
+      <h1 className="text-xl font-bold text-[var(--tosky-dark)] mb-4 sm:text-2xl md:mb-6">
         Dashboard
       </h1>
 
-      <div className="bg-white p-6 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.1)] border border-[var(--tosky-border)] mb-8">
-        <h2 className="font-bold text-[var(--tosky-dark)] mb-4">Utilizzo</h2>
+      <div className="mb-6 rounded-lg border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-4 shadow-[0_2px_4px_rgba(0,0,0,0.06)] sm:p-6 md:mb-8">
+        <h2 className="mb-3 font-bold text-[var(--tosky-dark)] sm:mb-4">Utilizzo</h2>
         <p className="text-[var(--tosky-text-gray)]">
-          Ricerche questo mese: <strong>{searchCount}</strong> / {limit}
+          Ricerche questo mese:{' '}
+          <strong className="text-[var(--tosky-dark)]">
+            {searchCount}
+          </strong>{' '}
+          / {limit}
         </p>
-        <p className="text-sm text-[var(--tosky-muted)] mt-1">
-          Rimangono {remaining} ricerche
+        <p className="mt-2 text-sm text-[var(--tosky-text-gray)]">
+          Rimangono{' '}
+          <span className="font-semibold text-[var(--tosky-dark)]">{remaining}</span> ricerche
         </p>
-        <p className="text-sm text-[var(--tosky-muted)] mt-1">
-          Piano attuale: <span className="font-semibold capitalize">{tier}</span>
+        <p className="mt-2 text-sm text-[var(--tosky-text-gray)]">
+          Piano attuale:{' '}
+          <span className="font-semibold capitalize text-[var(--tosky-dark)]">{tier}</span>
         </p>
       </div>
 
-      <Link
-        href="/search"
-        className="inline-block px-8 py-4 bg-[var(--tosky-dark)] text-white font-bolder rounded-[99px] hover:bg-[var(--tosky-mid-gray)] transition-colors"
-      >
-        Nuova ricerca
-      </Link>
-
-      {(tier === 'pro' || tier === 'business') && (
+      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
+        <Link
+          href="/search"
+          className="inline-flex items-center justify-center px-6 py-3 text-center font-bolder text-[var(--tosky-pill-fg)] transition-colors rounded-[99px] bg-[var(--tosky-pill-bg)] hover:bg-[var(--tosky-pill-hover)] sm:px-8 sm:py-4"
+        >
+          Nuova ricerca
+        </Link>
         <Link
           href="/history"
-          className="ml-4 inline-block px-8 py-4 border border-[var(--tosky-border)] text-[var(--tosky-dark)] font-bolder rounded-[99px] hover:bg-[var(--tosky-light-gray)] transition-colors"
+          className="inline-flex items-center justify-center border-2 border-[var(--tosky-secondary)] px-6 py-3 text-center font-bolder text-[var(--tosky-secondary)] transition-colors rounded-[99px] hover:bg-[var(--tosky-secondary)] hover:text-white sm:px-8 sm:py-4"
         >
           Storico ricerche
         </Link>
-      )}
+      </div>
     </div>
   );
 }

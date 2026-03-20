@@ -1,10 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600;700&display=swap');
 @import "tailwindcss";
 
-/* Tosky Records Brand Kit 2026 */
-
+/* Tosky Records Brand Kit 2026 — light */
 :root {
-  /* Primary palette */
   --tosky-primary: #ED353A;
   --tosky-secondary: #007784;
   --tosky-dark: #333333;
@@ -21,16 +19,70 @@
   --tosky-base-text: #4A4A4A;
   --tosky-alert: #D91717;
   --tosky-success: #0DB145;
-  
-  /* Legacy compatibility */
   --background: #ffffff;
   --foreground: #333333;
+  --tosky-card: #ffffff;
+  --tosky-card-border: #DDDDDD;
+  /* Pulsanti scuri su card chiare (pricing, secondarie) */
+  --tosky-pill-bg: #333333;
+  --tosky-pill-fg: #ffffff;
+  --tosky-pill-hover: #4f4f4f;
+}
+
+/* Dark mode — muted, brand accents */
+.dark {
+  --tosky-dark: #f0f0f0;
+  --tosky-mid-gray: #c8c8c8;
+  --tosky-black: #f5f5f5;
+  --tosky-white: #1a1a1a;
+  --tosky-light-gray: #2a2a2a;
+  --tosky-lighter-gray: #252525;
+  --tosky-header-bg: #222222;
+  --tosky-border: #404040;
+  --tosky-muted: #8a8a8a;
+  --tosky-text-gray: #b0b0b0;
+  --tosky-base-text: #d5d5d5;
+  --background: #1a1a1a;
+  --foreground: #f0f0f0;
+  --tosky-card: #242424;
+  --tosky-card-border: #404040;
+  --tosky-pill-bg: #e8e8e8;
+  --tosky-pill-fg: #1a1a1a;
+  --tosky-pill-hover: #d0d0d0;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: 'Prompt', sans-serif;
+}
+
+/* Glass loading — orbital spinner */
+@keyframes prt-orbit-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes prt-orbit-pulse {
+  0%,
+  100% {
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes prt-glass-fade-in {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
 }
 
 body {
@@ -40,4 +92,8 @@ body {
   font-size: 106%;
   line-height: 1.6;
   letter-spacing: -0.1px;
+}
+
+.dark body {
+  color-scheme: dark;
 }

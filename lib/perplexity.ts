@@ -1,3 +1,5 @@
+import { expandArtistVariants, normalizeWhitespace } from '@/lib/artist-variants';
+
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/search';
 
 export interface PerplexitySearchResult {
@@ -28,7 +30,7 @@ export async function perplexitySearch(
   const allResults: PerplexitySearchResult[] = [];
   const seenUrls = new Set<string>();
 
-  for (const query of queries.slice(0, 5)) {
+  for (const query of queries.slice(0, 10)) {
     const body: Record<string, unknown> = {
       query,
       max_results: Math.min(options.maxResults ?? 20, 20),
@@ -72,31 +74,48 @@ export async function perplexitySearch(
   return allResults;
 }
 
+const MAX_PRIMARY_QUERIES = 10;
+
+function pushArtistAlbumQueries(queries: string[], artist: string, album: string) {
+  queries.push(
+    `"${artist}" "${album}" review`,
+    `${artist} ${album} music`,
+    `${artist} ${album} interview`,
+    `${artist} ${album} recensione`,
+    `${artist} ${album} press`
+  );
+}
+
+function pushArtistOnlyQueries(queries: string[], artist: string) {
+  queries.push(
+    `"${artist}" music review`,
+    `${artist} band news`,
+    `${artist} interview`,
+    `${artist} latest album`,
+    `${artist} musician press`
+  );
+}
+
 export function buildSearchQueries(artist: string, album: string): string[] {
   const queries: string[] = [];
+  const albumNorm = normalizeWhitespace(album);
 
-  if (artist && album) {
+  if (artist.trim()) {
+    const variants = expandArtistVariants(artist);
+    for (const a of variants) {
+      if (albumNorm) {
+        pushArtistAlbumQueries(queries, a, albumNorm);
+      } else {
+        pushArtistOnlyQueries(queries, a);
+      }
+    }
+  } else if (albumNorm) {
     queries.push(
-      `"${artist}" "${album}" review`,
-      `${artist} ${album} recensione`,
-      `${artist} ${album} interview`,
-      `${artist} ${album} music press`,
-      `${artist} ${album} album news`
-    );
-  } else if (artist) {
-    queries.push(
-      `"${artist}" music review`,
-      `${artist} latest album`,
-      `${artist} interview`,
-      `${artist} news press`
-    );
-  } else if (album) {
-    queries.push(
-      `"${album}" album review`,
-      `${album} music`,
-      `${album} recensione`
+      `"${albumNorm}" album review`,
+      `${albumNorm} music album`,
+      `${albumNorm} recensione`
     );
   }
 
-  return queries.filter(Boolean).slice(0, 5);
+  return [...new Set(queries.filter(Boolean))].slice(0, MAX_PRIMARY_QUERIES);
 }

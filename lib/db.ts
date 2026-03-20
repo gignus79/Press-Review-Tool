@@ -1,9 +1,29 @@
 import { neon } from '@neondatabase/serverless';
 
 const url = process.env.DATABASE_URL || 'postgresql://build:build@localhost/build';
+
 export const sql = neon(url);
 
-export async function initDb() {
+/** True when DATABASE_URL is missing (build/CI); skip live DB migrations. */
+function shouldSkipMigrations(): boolean {
+  return !process.env.DATABASE_URL || process.env.DATABASE_URL.includes('build:build@localhost');
+}
+
+let schemaPromise: Promise<void> | null = null;
+
+/**
+ * Creates tables on Neon if missing (idempotent).
+ * Call once per process; safe to await from many places.
+ */
+export async function ensureSchema(): Promise<void> {
+  if (shouldSkipMigrations()) return;
+  if (!schemaPromise) {
+    schemaPromise = runMigrations();
+  }
+  return schemaPromise;
+}
+
+async function runMigrations(): Promise<void> {
   await sql`
     CREATE TABLE IF NOT EXISTS users (
       id TEXT PRIMARY KEY,
