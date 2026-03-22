@@ -6,6 +6,7 @@ import { UserButton } from '@clerk/nextjs';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NewsletterButton } from '@/components/NewsletterButton';
+import { FeedbackButton } from '@/components/FeedbackButton';
 import { useI18n } from '@/lib/i18n/context';
 
 const LOGO_URL = 'https://toskyrecords.com/wp-content/uploads/2022/08/Logo-Tosky-email-shop.png';
@@ -25,7 +26,7 @@ export function Header() {
             alt="Tosky Records"
             width={280}
             height={80}
-            className="h-9 w-auto sm:h-10 dark:invert dark:brightness-125"
+            className="h-9 w-auto sm:h-10 brightness-0 dark:invert dark:brightness-125"
             style={{ width: 'auto', height: 'auto', maxHeight: '2.5rem' }}
           />
         </Link>
@@ -51,6 +52,7 @@ export function Header() {
             </Link>
           </nav>
           <NewsletterButton className="hidden sm:inline-flex" />
+          <FeedbackButton className="hidden sm:inline-flex" />
           <LanguageSwitcher />
           <ThemeToggle />
           <UserButton />

@@ -6,7 +6,7 @@ export type Dictionary = typeof dictionaries.it;
 
 export const dictionaries = {
   it: {
-    nav: { home: 'Home', pricing: 'Prezzi', dashboard: 'Dashboard', newsletter: 'Newsletter' },
+    nav: { home: 'Home', pricing: 'Prezzi', dashboard: 'Dashboard', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Chiaro', dark: 'Scuro' },
     lang: { label: 'Lingua GUI' },
     landing: {
@@ -152,7 +152,7 @@ export const dictionaries = {
     footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
   },
   en: {
-    nav: { home: 'Home', pricing: 'Pricing', dashboard: 'Dashboard', newsletter: 'Newsletter' },
+    nav: { home: 'Home', pricing: 'Pricing', dashboard: 'Dashboard', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Light', dark: 'Dark' },
     lang: { label: 'UI language' },
     landing: {
@@ -298,7 +298,7 @@ export const dictionaries = {
     footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
   },
   es: {
-    nav: { home: 'Inicio', pricing: 'Precios', dashboard: 'Panel', newsletter: 'Newsletter' },
+    nav: { home: 'Inicio', pricing: 'Precios', dashboard: 'Panel', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Claro', dark: 'Oscuro' },
     lang: { label: 'Idioma' },
     landing: {
@@ -444,7 +444,7 @@ export const dictionaries = {
     footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
   },
   fr: {
-    nav: { home: 'Accueil', pricing: 'Tarifs', dashboard: 'Tableau de bord', newsletter: 'Newsletter' },
+    nav: { home: 'Accueil', pricing: 'Tarifs', dashboard: 'Tableau de bord', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Clair', dark: 'Sombre' },
     lang: { label: 'Langue' },
     landing: {

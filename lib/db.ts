@@ -71,4 +71,18 @@ async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS ip_user_guard_ip_month_idx
     ON ip_user_guard (ip_hash, month_year)
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS feedback (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      clerk_user_id TEXT NOT NULL,
+      page_path TEXT DEFAULT '/',
+      message TEXT NOT NULL,
+      ip_hash TEXT,
+      created_at TIMESTAMPTZ DEFAULT now()
+    )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS feedback_user_created_idx
+    ON feedback (clerk_user_id, created_at DESC)
+  `;
 }

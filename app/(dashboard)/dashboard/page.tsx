@@ -1,7 +1,7 @@
-import Link from 'next/link';
 import { auth } from '@clerk/nextjs/server';
 import { sql, ensureSchema } from '@/lib/db';
 import { getSearchLimit } from '@/lib/tier-utils';
+import { DashboardActions } from '@/components/DashboardActions';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -50,20 +50,7 @@ export default async function DashboardPage() {
         </p>
       </div>
 
-      <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:gap-4">
-        <Link
-          href="/search"
-          className="inline-flex items-center justify-center px-6 py-3 text-center font-bolder text-[var(--tosky-pill-fg)] transition-colors rounded-[99px] bg-[var(--tosky-pill-bg)] hover:bg-[var(--tosky-pill-hover)] sm:px-8 sm:py-4"
-        >
-          Nuova ricerca
-        </Link>
-        <Link
-          href="/history"
-          className="inline-flex items-center justify-center border-2 border-[var(--tosky-secondary)] px-6 py-3 text-center font-bolder text-[var(--tosky-secondary)] transition-colors rounded-[99px] hover:bg-[var(--tosky-secondary)] hover:text-white sm:px-8 sm:py-4"
-        >
-          Storico ricerche
-        </Link>
-      </div>
+      <DashboardActions tier={tier} remaining={remaining} />
     </div>
   );
 }

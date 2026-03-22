@@ -7,7 +7,10 @@ export async function GET() {
     await ensureSchema();
     const { userId } = await auth();
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+      return NextResponse.json(
+        { error: 'Unauthorized' },
+        { status: 401, headers: { 'Cache-Control': 'no-store' } }
+      );
     }
 
     const userRow = await sql`
@@ -15,7 +18,7 @@ export async function GET() {
     `.then((r) => r[0] as { id: string } | undefined);
 
     if (!userRow) {
-      return NextResponse.json({ searches: [] });
+      return NextResponse.json({ searches: [] }, { headers: { 'Cache-Control': 'no-store' } });
     }
 
     const searches = await sql`
@@ -34,12 +37,12 @@ export async function GET() {
         results_count: number | null;
         created_at: Date;
       }>,
-    });
+    }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {
     console.error('History API:', e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'Failed' },
-      { status: 500 }
+      { status: 500, headers: { 'Cache-Control': 'no-store' } }
     );
   }
 }
