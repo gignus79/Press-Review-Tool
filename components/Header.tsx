@@ -26,7 +26,7 @@ export function Header() {
             alt="Tosky Records"
             width={280}
             height={80}
-            className="h-9 w-auto sm:h-10 [filter:invert(1)] dark:[filter:invert(0)]"
+            className="h-9 w-auto sm:h-10 dark:invert dark:brightness-125"
             style={{ width: 'auto', height: 'auto', maxHeight: '2.5rem' }}
           />
         </Link>
@@ -52,7 +52,7 @@ export function Header() {
             </Link>
           </nav>
           <NewsletterButton className="hidden sm:inline-flex" />
-          <FeedbackButton className="hidden sm:inline-flex" />
+          <FeedbackButton className="inline-flex" />
           <LanguageSwitcher />
           <ThemeToggle />
           <UserButton />

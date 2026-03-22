@@ -34,7 +34,10 @@ export function PricingCards() {
     (async () => {
       try {
         const res = await fetch('/api/account/plan', { credentials: 'include', cache: 'no-store' });
-        if (!res.ok) return;
+        if (!res.ok) {
+          if (!cancelled) setPlan((prev) => ({ ...prev, loading: false }));
+          return;
+        }
         const data = (await res.json()) as { tier?: Tier; canManageSubscription?: boolean };
         if (!cancelled) {
           setPlan({
