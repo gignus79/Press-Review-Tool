@@ -42,6 +42,9 @@ export const dictionaries = {
       startFree: 'Inizia gratis',
       goSearch: 'Vai alla ricerca',
       subscribe: 'Sottoscrivi',
+      freeDetails: 'Uso personale e test iniziale. Nessuna carta richiesta.',
+      proDetails: 'Per artisti/etichette attive: più volume, export completi e priorità.',
+      businessDetails: 'Per team e agenzie: volumi alti, API e supporto prioritario.',
     },
     dashboard: {
       title: 'Dashboard',
@@ -95,6 +98,13 @@ export const dictionaries = {
       ],
       noResults:
         'Nessun risultato con questi criteri. Prova un periodo più ampio, artista/album diversi o una lingua “Multilingue”.',
+      limitTitle: 'Limite piano Free raggiunto',
+      limitBody: 'Hai esaurito le ricerche mensili del piano Free. Passa a Pro per continuare subito.',
+      ipLimitTitle: 'Uso Free limitato su questo IP',
+      ipLimitBody:
+        'Rilevati troppi account Free da questo IP nel mese corrente. Per continuare, passa a Pro oppure usa un account già attivo.',
+      popupUpgrade: 'Passa a Pro',
+      popupClose: 'Chiudi',
     },
     history: {
       title: 'Storico ricerche',
@@ -178,6 +188,9 @@ export const dictionaries = {
       startFree: 'Start free',
       goSearch: 'Go to search',
       subscribe: 'Subscribe',
+      freeDetails: 'Best for personal use and initial testing. No credit card required.',
+      proDetails: 'For active artists/labels: higher volume, full exports and priority.',
+      businessDetails: 'For teams/agencies: high volumes, API access and priority support.',
     },
     dashboard: {
       title: 'Dashboard',
@@ -231,6 +244,13 @@ export const dictionaries = {
       ],
       noResults:
         'No results for these criteria. Try a wider date range, different artist/album, or “Multilingual” results.',
+      limitTitle: 'Free plan limit reached',
+      limitBody: 'You have used all monthly searches in the Free plan. Upgrade to Pro to continue.',
+      ipLimitTitle: 'Free usage limited on this IP',
+      ipLimitBody:
+        'Too many Free accounts detected from this IP this month. Upgrade to Pro or use an already active account.',
+      popupUpgrade: 'Upgrade to Pro',
+      popupClose: 'Close',
     },
     history: {
       title: 'Search history',
@@ -314,6 +334,9 @@ export const dictionaries = {
       startFree: 'Empezar gratis',
       goSearch: 'Ir a búsqueda',
       subscribe: 'Suscribirse',
+      freeDetails: 'Ideal para uso personal y pruebas iniciales. Sin tarjeta.',
+      proDetails: 'Para artistas/sellos activos: más volumen, exportes completos y prioridad.',
+      businessDetails: 'Para equipos/agencias: gran volumen, API y soporte prioritario.',
     },
     dashboard: {
       title: 'Panel',
@@ -367,6 +390,13 @@ export const dictionaries = {
       ],
       noResults:
         'Sin resultados. Amplía fechas, prueba otro artista/álbum o idioma multilingüe.',
+      limitTitle: 'Límite Free alcanzado',
+      limitBody: 'Has agotado las búsquedas del plan Free. Pasa a Pro para continuar.',
+      ipLimitTitle: 'Uso Free limitado en esta IP',
+      ipLimitBody:
+        'Demasiadas cuentas Free detectadas desde esta IP este mes. Pasa a Pro o usa una cuenta ya activa.',
+      popupUpgrade: 'Pasar a Pro',
+      popupClose: 'Cerrar',
     },
     history: {
       title: 'Historial',
@@ -450,6 +480,9 @@ export const dictionaries = {
       startFree: 'Commencer gratuitement',
       goSearch: 'Aller à la recherche',
       subscribe: 'S’abonner',
+      freeDetails: 'Idéal pour usage personnel et premiers tests. Sans carte.',
+      proDetails: 'Pour artistes/labels actifs : plus de volume, exports complets et priorité.',
+      businessDetails: 'Pour équipes/agences : gros volume, API et support prioritaire.',
     },
     dashboard: {
       title: 'Tableau de bord',
@@ -503,6 +536,13 @@ export const dictionaries = {
       ],
       noResults:
         'Aucun résultat. Élargissez la période, modifiez artiste/album ou choisissez multilingue.',
+      limitTitle: 'Limite Free atteinte',
+      limitBody: 'Vous avez épuisé les recherches mensuelles du plan Free. Passez en Pro pour continuer.',
+      ipLimitTitle: 'Usage Free limité sur cette IP',
+      ipLimitBody:
+        'Trop de comptes Free détectés depuis cette IP ce mois-ci. Passez en Pro ou utilisez un compte déjà actif.',
+      popupUpgrade: 'Passer en Pro',
+      popupClose: 'Fermer',
     },
     history: {
       title: 'Historique',

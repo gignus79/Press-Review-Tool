@@ -6,6 +6,7 @@ import { runPerplexityWithFallback } from '@/lib/search-fallback';
 import { categorizeResults } from '@/lib/categorize';
 import { getSearchLimit } from '@/lib/tier-utils';
 import { resultInDateRange, parseResultDate } from '@/lib/date-result-filter';
+import { FREE_ACCOUNTS_PER_IP_LIMIT, getClientIp, hashIp } from '@/lib/ip-guard';
 import { randomUUID } from 'crypto';
 
 export async function POST(req: Request) {
@@ -63,6 +64,40 @@ export async function POST(req: Request) {
     const tier = (user?.tier as 'free' | 'pro' | 'business') ?? 'free';
     const limit = getSearchLimit(tier);
 
+    if (tier === 'free') {
+      const clientIp = getClientIp(req);
+      if (clientIp) {
+        const ipHash = hashIp(clientIp);
+        await sql`
+          INSERT INTO ip_user_guard (ip_hash, clerk_user_id, month_year)
+          VALUES (${ipHash}, ${userId}, ${monthYear})
+          ON CONFLICT (ip_hash, clerk_user_id, month_year) DO NOTHING
+        `;
+        const ipUsers = await sql`
+          SELECT COUNT(DISTINCT clerk_user_id)::int AS cnt
+          FROM ip_user_guard
+          WHERE ip_hash = ${ipHash} AND month_year = ${monthYear}
+        `;
+        const usersFromIp = ipUsers[0]?.cnt ?? 0;
+        if (usersFromIp > FREE_ACCOUNTS_PER_IP_LIMIT) {
+          console.warn('[SECURITY][IP_LIMIT_REACHED]', {
+            userId,
+            monthYear,
+            usersFromIp,
+            limit: FREE_ACCOUNTS_PER_IP_LIMIT,
+          });
+          return NextResponse.json(
+            {
+              code: 'IP_LIMIT_REACHED',
+              error:
+                'Troppi account free dallo stesso IP questo mese. Passa a Pro oppure contatta il supporto.',
+            },
+            { status: 429 }
+          );
+        }
+      }
+    }
+
     const usageResult = await sql`
       SELECT search_count FROM usage_tracking
       WHERE user_id = ${user!.id} AND month_year = ${monthYear}
@@ -70,8 +105,17 @@ export async function POST(req: Request) {
     const currentCount = usageResult[0]?.search_count ?? 0;
 
     if (currentCount >= limit) {
+      console.warn('[SECURITY][FREE_LIMIT_REACHED]', {
+        userId,
+        monthYear,
+        currentCount,
+        limit,
+      });
       return NextResponse.json(
-        { error: `Limite ricerche raggiunto (${limit}/mese). Aggiorna il piano.` },
+        {
+          code: 'FREE_LIMIT_REACHED',
+          error: `Limite ricerche raggiunto (${limit}/mese). Aggiorna il piano.`,
+        },
         { status: 429 }
       );
     }

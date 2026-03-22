@@ -57,4 +57,18 @@ async function runMigrations(): Promise<void> {
       UNIQUE(user_id, month_year)
     )
   `;
+  await sql`
+    CREATE TABLE IF NOT EXISTS ip_user_guard (
+      id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+      ip_hash TEXT NOT NULL,
+      clerk_user_id TEXT NOT NULL,
+      month_year TEXT NOT NULL,
+      first_seen TIMESTAMPTZ DEFAULT now(),
+      UNIQUE(ip_hash, clerk_user_id, month_year)
+    )
+  `;
+  await sql`
+    CREATE INDEX IF NOT EXISTS ip_user_guard_ip_month_idx
+    ON ip_user_guard (ip_hash, month_year)
+  `;
 }

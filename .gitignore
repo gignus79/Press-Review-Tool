@@ -43,3 +43,8 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+# private runtime env
+.env.private
+.env.private.*
+.env.ready
+.env.ready.*

@@ -49,6 +49,9 @@ export function PricingCards() {
             <li key={line}>{line}</li>
           ))}
         </ul>
+        <p className="mb-6 text-xs leading-relaxed text-[var(--tosky-text-gray)]">
+          {t.pricing.freeDetails}
+        </p>
         <Link
           href={isSignedIn ? '/search' : '/sign-up'}
           className={btnSecondary}
@@ -72,6 +75,9 @@ export function PricingCards() {
             <li key={line}>{line}</li>
           ))}
         </ul>
+        <p className="mb-6 text-xs leading-relaxed text-[var(--tosky-text-gray)]">
+          {t.pricing.proDetails}
+        </p>
         <button
           type="button"
           onClick={() => handleCheckout('pro')}
@@ -92,6 +98,9 @@ export function PricingCards() {
             <li key={line}>{line}</li>
           ))}
         </ul>
+        <p className="mb-6 text-xs leading-relaxed text-[var(--tosky-text-gray)]">
+          {t.pricing.businessDetails}
+        </p>
         <button
           type="button"
           onClick={() => handleCheckout('business')}

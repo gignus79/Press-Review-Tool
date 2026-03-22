@@ -110,11 +110,30 @@ export async function GET(
     }
 
     if (format === 'xlsx') {
-      const XLSX = await import('xlsx');
-      const ws = XLSX.utils.json_to_sheet(results.length ? results : [{ note: 'No rows' }]);
-      const wb = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(wb, ws, 'Results');
-      const out = XLSX.write(wb, { type: 'array', bookType: 'xlsx' });
+      const ExcelJS = await import('exceljs');
+      const wb = new ExcelJS.Workbook();
+      wb.creator = 'Press Review Tool';
+      wb.created = new Date();
+      const ws = wb.addWorksheet('Results');
+      const keys = [
+        'title',
+        'source',
+        'language',
+        'date',
+        'content_type',
+        'relevance',
+        'url',
+        'description',
+      ] as const;
+      ws.columns = keys.map((k) => ({ header: k, key: k, width: k === 'description' ? 60 : 24 }));
+      if (results.length) {
+        ws.addRows(results);
+      } else {
+        ws.addRow({ title: 'No rows' });
+      }
+      ws.getRow(1).font = { bold: true };
+      ws.views = [{ state: 'frozen', ySplit: 1 }];
+      const out = await wb.xlsx.writeBuffer();
       const bytes = new Uint8Array(out);
       return new NextResponse(bytes, {
         headers: {

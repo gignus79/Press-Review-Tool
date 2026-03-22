@@ -35,6 +35,10 @@ function SearchPageInner() {
   const [results, setResults] = useState<ResultsState | null>(null);
   const [loading, setLoading] = useState(false);
   const [hydratingExport, setHydratingExport] = useState(false);
+  const [limitPopup, setLimitPopup] = useState<null | {
+    title: string;
+    body: string;
+  }>(null);
   const prevExportId = useRef<string>(exportIdParam);
 
   useEffect(() => {
@@ -105,13 +109,32 @@ function SearchPageInner() {
               body: JSON.stringify(params),
             });
             const data = await res.json();
-            if (!res.ok) throw new Error(data.error || 'Search failed');
+            if (!res.ok) {
+              if (res.status === 429 && data?.code === 'FREE_LIMIT_REACHED') {
+                setLimitPopup({
+                  title: t.search.limitTitle,
+                  body: t.search.limitBody,
+                });
+                return;
+              }
+              if (res.status === 429 && data?.code === 'IP_LIMIT_REACHED') {
+                setLimitPopup({
+                  title: t.search.ipLimitTitle,
+                  body: t.search.ipLimitBody,
+                });
+                return;
+              }
+              throw new Error(data.error || 'Search failed');
+            }
             setResults({
               query: data.query,
               results: data.results,
               exportId: data.exportId,
               remainingSearches: data.remainingSearches,
             });
+          } catch (err) {
+            const message = err instanceof Error ? err.message : 'Search failed';
+            alert(message);
           } finally {
             setLoading(false);
           }
@@ -133,6 +156,32 @@ function SearchPageInner() {
             }
             rotateIntervalMs={2600}
           />
+        </div>
+      )}
+
+      {limitPopup && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4">
+          <div className="w-full max-w-md rounded-2xl border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-5 shadow-2xl">
+            <h2 className="text-lg font-bold text-[var(--tosky-dark)]">{limitPopup.title}</h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--tosky-text-gray)]">
+              {limitPopup.body}
+            </p>
+            <div className="mt-5 flex gap-3">
+              <a
+                href="/pricing"
+                className="inline-flex items-center justify-center rounded-[99px] bg-[var(--tosky-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90"
+              >
+                {t.search.popupUpgrade}
+              </a>
+              <button
+                type="button"
+                onClick={() => setLimitPopup(null)}
+                className="inline-flex items-center justify-center rounded-[99px] border border-[var(--tosky-border)] px-4 py-2 text-sm font-semibold text-[var(--tosky-dark)] hover:bg-[var(--tosky-light-gray)]"
+              >
+                {t.search.popupClose}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
