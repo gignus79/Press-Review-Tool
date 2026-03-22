@@ -6,13 +6,13 @@ export type Dictionary = typeof dictionaries.it;
 
 export const dictionaries = {
   it: {
-    nav: { home: 'Home', pricing: 'Prezzi', dashboard: 'Dashboard', newsletter: 'Newsletter', feedback: 'Feedback' },
+    nav: { home: 'Home', pricing: 'Piani', dashboard: 'Dashboard', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Chiaro', dark: 'Scuro' },
     lang: { label: 'Lingua GUI' },
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        'Rassegne stampa complete per artisti. Ricerca intelligente, analisi AI, export professionale.',
+        "Rassegne stampa complete per artisti. Press Review Tool e parte di LabelTools, suite professionale per l'industria musicale in sviluppo e integrazione progressiva.",
       cta: 'Inizia gratis',
       how: 'Come funziona',
       searchTitle: 'Ricerca',
@@ -42,6 +42,9 @@ export const dictionaries = {
       startFree: 'Inizia gratis',
       goSearch: 'Vai alla ricerca',
       subscribe: 'Sottoscrivi',
+      currentPlan: 'Piano attuale',
+      currentPlanActive: 'Piano attivo',
+      manageSubscription: 'Gestisci abbonamento',
       freeDetails: 'Uso personale e test iniziale. Nessuna carta richiesta.',
       proDetails: 'Per artisti/etichette attive: più volume, export completi e priorità.',
       businessDetails: 'Per team e agenzie: volumi alti, API e supporto prioritario.',
@@ -152,13 +155,13 @@ export const dictionaries = {
     footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
   },
   en: {
-    nav: { home: 'Home', pricing: 'Pricing', dashboard: 'Dashboard', newsletter: 'Newsletter', feedback: 'Feedback' },
+    nav: { home: 'Home', pricing: 'Plans', dashboard: 'Dashboard', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Light', dark: 'Dark' },
     lang: { label: 'UI language' },
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        'Complete press digests for artists. Smart search, AI analysis, professional exports.',
+        'Complete press digests for artists. Press Review Tool is part of LabelTools, a professional music-industry suite currently rolling out with progressive integrations.',
       cta: 'Start free',
       how: 'How it works',
       searchTitle: 'Search',
@@ -188,6 +191,9 @@ export const dictionaries = {
       startFree: 'Start free',
       goSearch: 'Go to search',
       subscribe: 'Subscribe',
+      currentPlan: 'Current plan',
+      currentPlanActive: 'Active plan',
+      manageSubscription: 'Manage subscription',
       freeDetails: 'Best for personal use and initial testing. No credit card required.',
       proDetails: 'For active artists/labels: higher volume, full exports and priority.',
       businessDetails: 'For teams/agencies: high volumes, API access and priority support.',
@@ -298,13 +304,13 @@ export const dictionaries = {
     footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
   },
   es: {
-    nav: { home: 'Inicio', pricing: 'Precios', dashboard: 'Panel', newsletter: 'Newsletter', feedback: 'Feedback' },
+    nav: { home: 'Inicio', pricing: 'Planes', dashboard: 'Panel', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Claro', dark: 'Oscuro' },
     lang: { label: 'Idioma' },
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        'Dossiers de prensa completos para artistas. Búsqueda inteligente, análisis IA, exportes pro.',
+        'Dossiers de prensa completos para artistas. Press Review Tool forma parte de LabelTools, una suite profesional para la industria musical en desarrollo e integración progresiva.',
       cta: 'Empezar gratis',
       how: 'Cómo funciona',
       searchTitle: 'Búsqueda',
@@ -334,6 +340,9 @@ export const dictionaries = {
       startFree: 'Empezar gratis',
       goSearch: 'Ir a búsqueda',
       subscribe: 'Suscribirse',
+      currentPlan: 'Plan actual',
+      currentPlanActive: 'Plan activo',
+      manageSubscription: 'Gestionar suscripcion',
       freeDetails: 'Ideal para uso personal y pruebas iniciales. Sin tarjeta.',
       proDetails: 'Para artistas/sellos activos: más volumen, exportes completos y prioridad.',
       businessDetails: 'Para equipos/agencias: gran volumen, API y soporte prioritario.',
@@ -444,13 +453,13 @@ export const dictionaries = {
     footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
   },
   fr: {
-    nav: { home: 'Accueil', pricing: 'Tarifs', dashboard: 'Tableau de bord', newsletter: 'Newsletter', feedback: 'Feedback' },
+    nav: { home: 'Accueil', pricing: 'Offres', dashboard: 'Tableau de bord', newsletter: 'Newsletter', feedback: 'Feedback' },
     theme: { light: 'Clair', dark: 'Sombre' },
     lang: { label: 'Langue' },
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        'Revues de presse complètes pour les artistes. Recherche intelligente, analyse IA, exports pro.',
+        "Revues de presse complètes pour les artistes. Press Review Tool fait partie de LabelTools, une suite professionnelle pour l'industrie musicale en développement et intégration progressive.",
       cta: 'Commencer gratuitement',
       how: 'Fonctionnement',
       searchTitle: 'Recherche',
@@ -480,6 +489,9 @@ export const dictionaries = {
       startFree: 'Commencer gratuitement',
       goSearch: 'Aller à la recherche',
       subscribe: 'S’abonner',
+      currentPlan: 'Offre actuelle',
+      currentPlanActive: 'Offre active',
+      manageSubscription: "Gerer l'abonnement",
       freeDetails: 'Idéal pour usage personnel et premiers tests. Sans carte.',
       proDetails: 'Pour artistes/labels actifs : plus de volume, exports complets et priorité.',
       businessDetails: 'Pour équipes/agences : gros volume, API et support prioritaire.',

@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { sql, ensureSchema } from '@/lib/db';
 import { getSearchLimit } from '@/lib/tier-utils';
 import { DashboardActions } from '@/components/DashboardActions';
+import { ManageSubscriptionButton } from '@/components/ManageSubscriptionButton';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -51,6 +52,15 @@ export default async function DashboardPage() {
       </div>
 
       <DashboardActions tier={tier} remaining={remaining} />
+
+      {tier !== 'free' ? (
+        <div className="mt-4 max-w-xs">
+          <ManageSubscriptionButton
+            label="Gestisci abbonamento"
+            className="block w-full py-3 text-center font-bolder rounded-[99px] transition-colors bg-[var(--tosky-pill-bg)] text-[var(--tosky-pill-fg)] hover:bg-[var(--tosky-pill-hover)]"
+          />
+        </div>
+      ) : null}
     </div>
   );
 }
