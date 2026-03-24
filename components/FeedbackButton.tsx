@@ -52,8 +52,8 @@ export function FeedbackButton({ className = '' }: { className?: string }) {
         {t.nav.feedback}
       </button>
       {open && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/45 p-4">
-          <div className="w-full max-w-lg rounded-2xl border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-5 shadow-2xl">
+        <div className="fixed inset-0 z-[60] overflow-y-auto bg-black/45 p-4 pt-[max(1rem,env(safe-area-inset-top))] sm:flex sm:items-center sm:justify-center">
+          <div className="mx-auto mt-14 w-full max-w-lg rounded-2xl border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-5 shadow-2xl sm:mt-0 max-h-[calc(100dvh-2rem)] overflow-y-auto">
             <h2 className="text-lg font-bold text-[var(--tosky-dark)]">Feedback</h2>
             <p className="mt-1 text-sm text-[var(--tosky-text-gray)]">
               {signedIn
