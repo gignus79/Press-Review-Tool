@@ -9,7 +9,7 @@ import { NewsletterButton } from '@/components/NewsletterButton';
 import { FeedbackButton } from '@/components/FeedbackButton';
 import { useI18n } from '@/lib/i18n/context';
 
-const LOGO_URL = 'https://toskyrecords.com/wp-content/uploads/2022/08/Logo-Tosky-email-shop.png';
+const LOGO_URL = '/Logo_Tosky 2022_300dpi_White logo (square).png';
 
 export function Header() {
   const { t } = useI18n();
@@ -26,8 +26,8 @@ export function Header() {
             alt="Tosky Records"
             width={280}
             height={80}
-            className="h-9 w-auto sm:h-10 [filter:invert(1)] dark:[filter:invert(0)] dark:brightness-125"
-            style={{ width: 'auto', height: 'auto', maxHeight: '2.5rem' }}
+            className="h-10 w-auto sm:h-11 [filter:invert(1)] dark:[filter:invert(0)] dark:brightness-125"
+            style={{ width: 'auto', height: 'auto', maxHeight: '2.75rem' }}
           />
         </a>
         <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3 md:gap-4">
