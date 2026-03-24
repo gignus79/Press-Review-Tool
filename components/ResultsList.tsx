@@ -97,10 +97,10 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
                       <span
                         className={`px-3 py-1 rounded text-xs font-semibold uppercase ${
                           r.relevance === 'High'
-                            ? 'bg-emerald-500/15 text-emerald-800 dark:text-emerald-200'
+                            ? 'border border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-400/30 dark:bg-emerald-500/20 dark:text-emerald-200'
                             : r.relevance === 'Medium'
-                              ? 'bg-amber-500/15 text-amber-900 dark:text-amber-200'
-                              : 'bg-red-500/15 text-red-800 dark:text-red-200'
+                              ? 'border border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/20 dark:text-amber-200'
+                              : 'border border-rose-300 bg-rose-100 text-rose-900 dark:border-rose-400/30 dark:bg-rose-500/20 dark:text-rose-200'
                         }`}
                       >
                         {relLabel(r.relevance)}

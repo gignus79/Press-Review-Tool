@@ -62,6 +62,36 @@ export async function GET() {
           | undefined
     );
 
+    // If Clerk user id changed (e.g. auth migration), recover the existing account by email.
+    if (!row && primaryEmail) {
+      const byEmail = await sql`
+        SELECT id, email, tier, stripe_customer_id, stripe_subscription_id
+        FROM users
+        WHERE LOWER(email) = LOWER(${primaryEmail})
+        ORDER BY created_at DESC
+        LIMIT 1
+      `.then(
+        (r) =>
+          r[0] as
+            | {
+                id: string;
+                email: string;
+                tier: Tier | null;
+                stripe_customer_id: string | null;
+                stripe_subscription_id: string | null;
+              }
+            | undefined
+      );
+      if (byEmail) {
+        await sql`
+          UPDATE users
+          SET clerk_user_id = ${userId}
+          WHERE id = ${byEmail.id}
+        `;
+        row = byEmail;
+      }
+    }
+
     if (!row) {
       await sql`
         INSERT INTO users (id, clerk_user_id, email, tier)
