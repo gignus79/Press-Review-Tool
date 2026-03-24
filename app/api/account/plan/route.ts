@@ -2,6 +2,7 @@ import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { ensureSchema, sql } from '@/lib/db';
 import { stripe } from '@/lib/stripe';
+import { randomUUID } from 'crypto';
 
 type Tier = 'free' | 'pro' | 'business';
 
@@ -20,7 +21,7 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const row = await sql`
+    let row = await sql`
       SELECT id, tier, stripe_customer_id, stripe_subscription_id
       FROM users
       WHERE clerk_user_id = ${userId}
@@ -37,30 +38,88 @@ export async function GET() {
           | undefined
     );
 
+    if (!row) {
+      await sql`
+        INSERT INTO users (id, clerk_user_id, email, tier)
+        VALUES (${randomUUID()}, ${userId}, '', 'free')
+        ON CONFLICT (clerk_user_id) DO NOTHING
+      `;
+      row = await sql`
+        SELECT id, tier, stripe_customer_id, stripe_subscription_id
+        FROM users
+        WHERE clerk_user_id = ${userId}
+        LIMIT 1
+      `.then(
+        (r) =>
+          r[0] as
+            | {
+                id: string;
+                tier: Tier | null;
+                stripe_customer_id: string | null;
+                stripe_subscription_id: string | null;
+              }
+            | undefined
+      );
+    }
+
     let tier = (row?.tier as Tier | null) ?? 'free';
     let canManageSubscription = Boolean(row?.stripe_customer_id && row?.stripe_subscription_id);
 
-    if (row?.stripe_customer_id && stripe) {
+    if (row && stripe) {
       try {
-        const subscriptions = await stripe.subscriptions.list({
-          customer: row.stripe_customer_id,
-          status: 'all',
-          limit: 10,
-        });
+        let active: { id: string; customer: string | null; priceId: string | null } | null = null;
 
-        const active = subscriptions.data.find((sub) =>
-          ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
-        );
+        if (row.stripe_customer_id) {
+          const subscriptions = await stripe.subscriptions.list({
+            customer: row.stripe_customer_id,
+            status: 'all',
+            limit: 10,
+          });
+          const hit = subscriptions.data.find((sub) =>
+            ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
+          );
+          if (hit) {
+            active = {
+              id: hit.id,
+              customer: typeof hit.customer === 'string' ? hit.customer : null,
+              priceId: hit.items.data[0]?.price.id ?? null,
+            };
+          }
+        }
 
-        const computedTier = tierFromPriceId(active?.items.data[0]?.price.id);
+        // Fallback: recover subscription even if webhook never persisted customer/sub IDs.
+        if (!active) {
+          const searched = await stripe.subscriptions.search({
+            query: `metadata['clerkUserId']:'${userId}'`,
+            limit: 10,
+          });
+          const hit = searched.data.find((sub) =>
+            ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
+          );
+          if (hit) {
+            active = {
+              id: hit.id,
+              customer: typeof hit.customer === 'string' ? hit.customer : null,
+              priceId: hit.items.data[0]?.price.id ?? null,
+            };
+          }
+        }
+
+        const computedTier = tierFromPriceId(active?.priceId);
         const computedSubscriptionId = active?.id ?? null;
-        const hasManage = Boolean(active?.id);
+        const computedCustomerId = active?.customer ?? row.stripe_customer_id ?? null;
+        const hasManage = Boolean(active?.id && computedCustomerId);
 
-        if (computedTier !== tier || computedSubscriptionId !== row.stripe_subscription_id) {
+        if (
+          computedTier !== tier ||
+          computedSubscriptionId !== row.stripe_subscription_id ||
+          computedCustomerId !== row.stripe_customer_id
+        ) {
           await sql`
             UPDATE users
             SET tier = ${computedTier},
-                stripe_subscription_id = ${computedSubscriptionId}
+                stripe_subscription_id = ${computedSubscriptionId},
+                stripe_customer_id = ${computedCustomerId}
             WHERE id = ${row.id}
           `;
         }
