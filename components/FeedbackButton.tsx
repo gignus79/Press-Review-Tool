@@ -12,10 +12,14 @@ export function FeedbackButton({ className = '' }: { className?: string }) {
   const [open, setOpen] = useState(false);
   const [msg, setMsg] = useState('');
   const [sending, setSending] = useState(false);
-
-  if (!userId) return null;
+  const signedIn = Boolean(userId);
 
   const send = async () => {
+    if (!signedIn) {
+      const next = encodeURIComponent(pathname || '/');
+      window.location.href = `/sign-in?redirect_url=${next}`;
+      return;
+    }
     if (!msg.trim()) return;
     setSending(true);
     try {
@@ -52,7 +56,9 @@ export function FeedbackButton({ className = '' }: { className?: string }) {
           <div className="w-full max-w-lg rounded-2xl border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-5 shadow-2xl">
             <h2 className="text-lg font-bold text-[var(--tosky-dark)]">Feedback</h2>
             <p className="mt-1 text-sm text-[var(--tosky-text-gray)]">
-              Dicci cosa migliorare nell&apos;app. Il feedback resta interno al progetto.
+              {signedIn
+                ? "Dicci cosa migliorare nell'app. Il feedback resta interno al progetto."
+                : 'Accedi per inviare feedback interno sul prodotto.'}
             </p>
             <textarea
               value={msg}
@@ -68,7 +74,7 @@ export function FeedbackButton({ className = '' }: { className?: string }) {
                 onClick={() => void send()}
                 className="inline-flex items-center justify-center rounded-[99px] bg-[var(--tosky-primary)] px-4 py-2 text-sm font-semibold text-white hover:opacity-90 disabled:opacity-50"
               >
-                {sending ? 'Invio…' : 'Invia feedback'}
+                {sending ? 'Invio…' : signedIn ? 'Invia feedback' : 'Accedi e invia'}
               </button>
               <button
                 type="button"
