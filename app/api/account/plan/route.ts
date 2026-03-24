@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { ensureSchema, sql } from '@/lib/db';
 import { stripe } from '@/lib/stripe';
@@ -13,6 +13,26 @@ function tierFromPriceId(priceId: string | null | undefined): Tier {
   return 'free';
 }
 
+async function findActiveSubscriptionByCustomerId(
+  customerId: string
+): Promise<{ id: string; customer: string | null; priceId: string | null } | null> {
+  if (!stripe) return null;
+  const subscriptions = await stripe.subscriptions.list({
+    customer: customerId,
+    status: 'all',
+    limit: 10,
+  });
+  const hit = subscriptions.data.find((sub) =>
+    ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
+  );
+  if (!hit) return null;
+  return {
+    id: hit.id,
+    customer: typeof hit.customer === 'string' ? hit.customer : null,
+    priceId: hit.items.data[0]?.price.id ?? null,
+  };
+}
+
 export async function GET() {
   try {
     await ensureSchema();
@@ -21,8 +41,11 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
+    const clerkUser = await currentUser();
+    const primaryEmail = clerkUser?.emailAddresses?.[0]?.emailAddress ?? '';
+
     let row = await sql`
-      SELECT id, tier, stripe_customer_id, stripe_subscription_id
+      SELECT id, email, tier, stripe_customer_id, stripe_subscription_id
       FROM users
       WHERE clerk_user_id = ${userId}
       LIMIT 1
@@ -31,6 +54,7 @@ export async function GET() {
         r[0] as
           | {
               id: string;
+              email: string;
               tier: Tier | null;
               stripe_customer_id: string | null;
               stripe_subscription_id: string | null;
@@ -41,11 +65,11 @@ export async function GET() {
     if (!row) {
       await sql`
         INSERT INTO users (id, clerk_user_id, email, tier)
-        VALUES (${randomUUID()}, ${userId}, '', 'free')
+        VALUES (${randomUUID()}, ${userId}, ${primaryEmail}, 'free')
         ON CONFLICT (clerk_user_id) DO NOTHING
       `;
       row = await sql`
-        SELECT id, tier, stripe_customer_id, stripe_subscription_id
+        SELECT id, email, tier, stripe_customer_id, stripe_subscription_id
         FROM users
         WHERE clerk_user_id = ${userId}
         LIMIT 1
@@ -54,12 +78,20 @@ export async function GET() {
           r[0] as
             | {
                 id: string;
+                email: string;
                 tier: Tier | null;
                 stripe_customer_id: string | null;
                 stripe_subscription_id: string | null;
               }
             | undefined
       );
+    } else if (primaryEmail && row.email !== primaryEmail) {
+      await sql`
+        UPDATE users
+        SET email = ${primaryEmail}
+        WHERE id = ${row.id}
+      `;
+      row.email = primaryEmail;
     }
 
     let tier = (row?.tier as Tier | null) ?? 'free';
@@ -70,21 +102,7 @@ export async function GET() {
         let active: { id: string; customer: string | null; priceId: string | null } | null = null;
 
         if (row.stripe_customer_id) {
-          const subscriptions = await stripe.subscriptions.list({
-            customer: row.stripe_customer_id,
-            status: 'all',
-            limit: 10,
-          });
-          const hit = subscriptions.data.find((sub) =>
-            ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
-          );
-          if (hit) {
-            active = {
-              id: hit.id,
-              customer: typeof hit.customer === 'string' ? hit.customer : null,
-              priceId: hit.items.data[0]?.price.id ?? null,
-            };
-          }
+          active = await findActiveSubscriptionByCustomerId(row.stripe_customer_id);
         }
 
         // Fallback: recover subscription even if webhook never persisted customer/sub IDs.
@@ -102,6 +120,20 @@ export async function GET() {
               customer: typeof hit.customer === 'string' ? hit.customer : null,
               priceId: hit.items.data[0]?.price.id ?? null,
             };
+          }
+        }
+
+        // Fallback by customer email to cover subscriptions created before live Clerk migration.
+        if (!active && row.email) {
+          const customers = await stripe.customers.list({ email: row.email, limit: 10 });
+          for (const customer of customers.data) {
+            const customerId = typeof customer.id === 'string' ? customer.id : null;
+            if (!customerId) continue;
+            const found = await findActiveSubscriptionByCustomerId(customerId);
+            if (found) {
+              active = found;
+              break;
+            }
           }
         }
 
