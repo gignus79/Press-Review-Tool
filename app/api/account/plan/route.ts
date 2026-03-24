@@ -5,6 +5,7 @@ import { stripe } from '@/lib/stripe';
 import { randomUUID } from 'crypto';
 
 type Tier = 'free' | 'pro' | 'business';
+const ACTIVE_SUB_STATUSES = new Set(['active', 'trialing']);
 
 function tierFromPriceId(priceId: string | null | undefined): Tier {
   if (!priceId) return 'free';
@@ -22,9 +23,7 @@ async function findActiveSubscriptionByCustomerId(
     status: 'all',
     limit: 10,
   });
-  const hit = subscriptions.data.find((sub) =>
-    ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
-  );
+  const hit = subscriptions.data.find((sub) => ACTIVE_SUB_STATUSES.has(sub.status));
   if (!hit) return null;
   return {
     id: hit.id,
@@ -141,9 +140,7 @@ export async function GET() {
             query: `metadata['clerkUserId']:'${userId}'`,
             limit: 10,
           });
-          const hit = searched.data.find((sub) =>
-            ['active', 'trialing', 'past_due', 'unpaid'].includes(sub.status)
-          );
+          const hit = searched.data.find((sub) => ACTIVE_SUB_STATUSES.has(sub.status));
           if (hit) {
             active = {
               id: hit.id,

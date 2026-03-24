@@ -20,7 +20,7 @@ export function Header() {
       style={{ fontFamily: 'var(--font-prompt), sans-serif' }}
     >
       <div className="mx-auto flex min-h-14 max-w-6xl flex-col gap-2 px-3 py-2 sm:h-16 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2 sm:px-4 sm:py-0">
-        <Link href="/" className="flex shrink-0 items-center gap-2">
+        <a href="https://toskyrecords.com" className="flex shrink-0 items-center gap-2">
           <Image
             src={LOGO_URL}
             alt="Tosky Records"
@@ -29,7 +29,7 @@ export function Header() {
             className="h-9 w-auto sm:h-10 [filter:invert(1)] dark:[filter:invert(0)] dark:brightness-125"
             style={{ width: 'auto', height: 'auto', maxHeight: '2.5rem' }}
           />
-        </Link>
+        </a>
         <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3 md:gap-4">
           <nav className="flex max-w-full items-center gap-3 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-4 sm:pb-0 [&::-webkit-scrollbar]:hidden">
             <Link
