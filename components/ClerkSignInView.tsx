@@ -13,10 +13,12 @@ export function ClerkSignInView() {
   }, [resolvedTheme]);
 
   return (
-    <SignIn
-      forceRedirectUrl="/dashboard"
-      fallbackRedirectUrl="/dashboard"
-      appearance={appearance}
-    />
+    <div className="w-full">
+      <SignIn
+        forceRedirectUrl="/dashboard"
+        fallbackRedirectUrl="/dashboard"
+        appearance={appearance}
+      />
+    </div>
   );
 }

@@ -5,6 +5,7 @@ import { useSearchParams } from 'next/navigation';
 import { SearchForm } from '@/components/SearchForm';
 import { ResultsList } from '@/components/ResultsList';
 import { GlassLoadingIndicator } from '@/components/GlassLoadingIndicator';
+import { PageBrandLabel } from '@/components/PageBrandLabel';
 import { useI18n } from '@/lib/i18n/context';
 
 type ResultRow = {
@@ -91,6 +92,7 @@ function SearchPageInner() {
 
   return (
     <div className="relative max-w-4xl mx-auto px-3 py-8 sm:px-4 sm:py-10 md:py-12">
+      <PageBrandLabel />
       <h1 className="text-xl font-bold text-[var(--tosky-dark)] mb-4 sm:text-2xl md:mb-6">
         {t.search.title}
       </h1>

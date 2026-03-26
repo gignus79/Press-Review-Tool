@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { sql, ensureSchema } from '@/lib/db';
 import Link from 'next/link';
+import { PageBrandLabel } from '@/components/PageBrandLabel';
 
 export default async function HistoryPage() {
   const { userId } = await auth();
@@ -38,6 +39,7 @@ export default async function HistoryPage() {
 
   return (
     <div className="max-w-4xl mx-auto px-3 py-8 sm:px-4 sm:py-12">
+      <PageBrandLabel />
       <h1 className="text-xl font-bold text-[var(--tosky-dark)] mb-4 sm:text-2xl md:mb-6">
         Storico ricerche
       </h1>

@@ -85,4 +85,7 @@ async function runMigrations(): Promise<void> {
     CREATE INDEX IF NOT EXISTS feedback_user_created_idx
     ON feedback (clerk_user_id, created_at DESC)
   `;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS display_name TEXT DEFAULT ''`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS onboarding_completed BOOLEAN DEFAULT FALSE`;
+  await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS preferred_locale TEXT DEFAULT 'it'`;
 }

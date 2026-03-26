@@ -48,15 +48,21 @@ function relevanceScore(rel: string): number {
   return 0;
 }
 
+function titleTieBreak(a: Result, b: Result): number {
+  return a.title.localeCompare(b.title, undefined, { sensitivity: 'base' });
+}
+
 function compareByDate(a: Result, b: Result, order: 'desc' | 'asc'): number {
   const da = parseResultDate(a.date);
   const db = parseResultDate(b.date);
-  if (!da && !db) return 0;
+  if (!da && !db) return titleTieBreak(a, b);
   if (!da) return 1;
   if (!db) return -1;
   const ta = da.getTime();
   const tb = db.getTime();
-  return order === 'desc' ? tb - ta : ta - tb;
+  const primary = order === 'desc' ? tb - ta : ta - tb;
+  if (primary !== 0) return primary;
+  return titleTieBreak(a, b);
 }
 
 function sortPair(a: Result, b: Result, mode: SortMode): number {
@@ -67,14 +73,14 @@ function sortPair(a: Result, b: Result, mode: SortMode): number {
     }
     case 'rel-asc': {
       const dr = relevanceScore(a.relevance) - relevanceScore(b.relevance);
-      return dr !== 0 ? dr : compareByDate(a, b, 'desc');
+      return dr !== 0 ? dr : compareByDate(a, b, 'asc');
     }
     case 'date-desc':
       return compareByDate(a, b, 'desc');
     case 'date-asc':
       return compareByDate(a, b, 'asc');
     default:
-      return 0;
+      return titleTieBreak(a, b);
   }
 }
 
@@ -122,6 +128,12 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
 
   return (
     <div className="bg-[var(--tosky-card)] p-6 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.1)] border border-[var(--tosky-card-border)]">
+      <div className="mb-3 flex flex-wrap items-baseline gap-x-3 gap-y-1 border-b border-[var(--tosky-border)] pb-3">
+        <span className="text-base font-extrabold text-[var(--tosky-dark)] dark:text-zinc-200 sm:text-lg">
+          {t.nav.brandLabel}
+        </span>
+        <span className="text-sm text-[var(--tosky-muted)]">{t.nav.productShort}</span>
+      </div>
       <h2 className="text-xl font-bold text-[var(--tosky-dark)] mb-4">
         {t.results.title} ({results.length})
       </h2>
@@ -142,7 +154,7 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
             id="results-sort"
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as SortMode)}
-            className="max-w-[min(100vw-2rem,20rem)] rounded-md border border-[var(--tosky-border)] bg-[var(--tosky-white)] px-2.5 py-1.5 text-xs font-semibold text-[var(--tosky-dark)]"
+            className="max-w-[min(100vw-2rem,20rem)] cursor-pointer rounded-md border border-[var(--tosky-border)] bg-[var(--tosky-card)] px-2.5 py-1.5 text-xs font-semibold text-[var(--tosky-dark)] shadow-sm"
           >
             <option value="rel-desc">{t.results.sortRelDesc}</option>
             <option value="rel-asc">{t.results.sortRelAsc}</option>
@@ -167,7 +179,7 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
                   const relNorm = normalizeRelevance(r.relevance);
                   return (
                     <div
-                      key={`${r.url}-${i}`}
+                      key={`${type}-${i}-${r.url}`}
                       className="p-4 bg-[var(--tosky-lighter-gray)] rounded-[4px] border-l-4 border-[var(--tosky-primary)]"
                     >
                       <div className="flex justify-between items-start mb-2">

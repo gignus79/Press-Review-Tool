@@ -13,10 +13,13 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
-  title: 'Press Review Tool | MediaMatter',
+  title: 'Press Review Tool | LabelTools',
   description:
-    'Professional music press review analysis — creative training & consulting by MediaMatter.',
+    'Professional music press review analysis — real-time search, AI classification, exports for labels and artists (LabelTools suite).',
 };
+
+const clerkAfterSignOutUrl =
+  process.env.NEXT_PUBLIC_CLERK_AFTER_SIGN_OUT_URL ?? '/dashboard';
 
 export default function RootLayout({
   children,
@@ -24,7 +27,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider afterSignOutUrl={clerkAfterSignOutUrl}>
       <html lang="en" className={prompt.variable} suppressHydrationWarning>
         <body className="min-h-full flex flex-col font-[family-name:var(--font-prompt)] antialiased">
           <Providers>{children}</Providers>

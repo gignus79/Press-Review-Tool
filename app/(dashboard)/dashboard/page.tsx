@@ -1,8 +1,7 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { sql, ensureSchema } from '@/lib/db';
 import { getSearchLimit } from '@/lib/tier-utils';
-import { DashboardActions } from '@/components/DashboardActions';
-import { ManageSubscriptionButton } from '@/components/ManageSubscriptionButton';
+import { DashboardPageContent } from '@/components/DashboardPageContent';
 
 export default async function DashboardPage() {
   const { userId } = await auth();
@@ -49,40 +48,11 @@ export default async function DashboardPage() {
   const remaining = Math.max(0, limit - searchCount);
 
   return (
-    <div className="max-w-4xl mx-auto px-3 py-8 sm:px-4 sm:py-10 md:py-12">
-      <h1 className="text-xl font-bold text-[var(--tosky-dark)] mb-4 sm:text-2xl md:mb-6">
-        Dashboard
-      </h1>
-
-      <div className="mb-6 rounded-lg border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-4 shadow-[0_2px_4px_rgba(0,0,0,0.06)] sm:p-6 md:mb-8">
-        <h2 className="mb-3 font-bold text-[var(--tosky-dark)] sm:mb-4">Utilizzo</h2>
-        <p className="text-[var(--tosky-text-gray)]">
-          Ricerche questo mese:{' '}
-          <strong className="text-[var(--tosky-dark)]">
-            {searchCount}
-          </strong>{' '}
-          / {limit}
-        </p>
-        <p className="mt-2 text-sm text-[var(--tosky-text-gray)]">
-          Rimangono{' '}
-          <span className="font-semibold text-[var(--tosky-dark)]">{remaining}</span> ricerche
-        </p>
-        <p className="mt-2 text-sm text-[var(--tosky-text-gray)]">
-          Piano attuale:{' '}
-          <span className="font-semibold capitalize text-[var(--tosky-dark)]">{tier}</span>
-        </p>
-      </div>
-
-      <DashboardActions tier={tier} remaining={remaining} />
-
-      {tier !== 'free' ? (
-        <div className="mt-4 max-w-xs">
-          <ManageSubscriptionButton
-            label="Gestisci abbonamento"
-            className="block w-full py-3 text-center font-bolder rounded-[99px] transition-colors bg-[var(--tosky-pill-bg)] text-[var(--tosky-pill-fg)] hover:bg-[var(--tosky-pill-hover)]"
-          />
-        </div>
-      ) : null}
-    </div>
+    <DashboardPageContent
+      searchCount={searchCount}
+      limit={limit}
+      remaining={remaining}
+      tier={tier}
+    />
   );
 }

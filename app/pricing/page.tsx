@@ -11,12 +11,13 @@ export default function PricingPage() {
     <div className="min-h-screen flex flex-col bg-[var(--tosky-white)]">
       <Header />
       <main className="flex-1 py-16 px-4">
-        <div className="max-w-4xl mx-auto text-center mb-12">
-          <h1 className="text-3xl font-bold text-[var(--tosky-dark)] mb-4">
+        <div className="mx-auto mb-12 max-w-4xl text-center">
+          <h1 className="mb-4 text-3xl font-bold text-[var(--tosky-dark)]">
             {t.pricing.title}
           </h1>
-          <p className="text-[var(--tosky-text-gray)]">
-            {t.pricing.subtitle}
+          <p className="text-[var(--tosky-text-gray)]">{t.pricing.subtitle}</p>
+          <p className="mx-auto mt-8 max-w-3xl text-left text-sm leading-relaxed text-[var(--tosky-base-text)]">
+            {t.pricing.intro}
           </p>
         </div>
         <PricingCards />

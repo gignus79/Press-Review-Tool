@@ -5,6 +5,9 @@ export function buildClerkAppearance(isDark: boolean) {
   if (isDark) {
     return {
       baseTheme: dark,
+      layout: {
+        socialButtonsPlacement: 'top',
+      },
       variables: {
         colorPrimary: '#ED353A',
         colorText: '#f4f4f5',
@@ -38,6 +41,9 @@ export function buildClerkAppearance(isDark: boolean) {
   }
 
   return {
+    layout: {
+      socialButtonsPlacement: 'top',
+    },
     variables: {
       colorPrimary: '#ED353A',
       colorBackground: '#ffffff',

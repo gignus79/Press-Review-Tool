@@ -65,10 +65,10 @@ export async function simplePdf(data: ExportData): Promise<Buffer> {
       doc.text('Press Review Tool', margin, 14);
       doc.setFont('helvetica', 'normal');
       doc.setFontSize(8.5);
-      doc.text('MediaMatter · creative training & consulting', margin, 22);
+      doc.text('LabelTools', margin, 22);
     } else {
       doc.setFontSize(9);
-      doc.text('Press Review Tool · MediaMatter', margin, 10);
+      doc.text('Press Review Tool · LabelTools', margin, 10);
     }
     doc.setTextColor(...BRAND.dark);
     return firstPage ? 40 : 22;
@@ -81,7 +81,7 @@ export async function simplePdf(data: ExportData): Promise<Buffer> {
       doc.setFontSize(7.5);
       doc.setTextColor(...BRAND.muted);
       doc.setFont('helvetica', 'normal');
-      doc.text(`Generato il ${new Date().toLocaleString('it-IT')} · MediaMatter`, margin, pageH - 8);
+      doc.text(`Generato il ${new Date().toLocaleString('it-IT')} · LabelTools`, margin, pageH - 8);
       doc.text(`Pag. ${p} / ${total}`, pageW - margin, pageH - 8, { align: 'right' });
       doc.setDrawColor(...BRAND.line);
       doc.setLineWidth(0.2);
