@@ -38,6 +38,6 @@ Address high/critical `npm audit` findings when upstream fixes exist; some trans
 |--------|--------|
 | `npm run lint` | Pass |
 | `npm run build` | Pass |
-| `npm audit --omit=dev` | Review output — **jspdf → dompurify** chain may report moderate/critical issues; upgrading `jspdf` major may be required for a clean audit (see `ADMIN_CHECKPOINT.md`). |
+| `npm audit --omit=dev` | Review output — **jspdf → dompurify** chain may report moderate/critical issues; upgrading `jspdf` major may be required for a clean audit. |
 
 Re-run the commands after dependency bumps. For manual QA, see **[docs/VERIFICATION.md](./docs/VERIFICATION.md)**.

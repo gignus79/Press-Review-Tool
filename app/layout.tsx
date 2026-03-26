@@ -13,8 +13,9 @@ const prompt = Prompt({
 });
 
 export const metadata: Metadata = {
-  title: 'Press Review Tool | Tosky Records®',
-  description: 'Professional music press review analysis. Rassegne stampa complete per artisti.',
+  title: 'Press Review Tool | MediaMatter',
+  description:
+    'Professional music press review analysis — creative training & consulting by MediaMatter.',
 };
 
 export default function RootLayout({

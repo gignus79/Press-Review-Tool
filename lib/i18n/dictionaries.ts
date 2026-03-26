@@ -12,7 +12,7 @@ export const dictionaries = {
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        "Rassegne stampa complete per artisti. Press Review Tool e parte di LabelTools, suite professionale per l'industria musicale in sviluppo e integrazione progressiva.",
+        'Rassegne stampa complete per artisti. Press Review Tool è un prodotto MediaMatter (creative training & consulting) per l’industria musicale.',
       cta: 'Inizia gratis',
       how: 'Come funziona',
       searchTitle: 'Ricerca',
@@ -22,6 +22,8 @@ export const dictionaries = {
       exportTitle: 'Export',
       exportDesc: 'PDF, Excel, JSON, CSV. Report per presentazioni e archivi.',
       plans: 'Vedi i piani',
+      suiteNote:
+        'Press Review Tool è parte dell’offerta MediaMatter per artisti, etichette e team musicali, con integrazione progressiva di altri strumenti professionali.',
     },
     pricing: {
       title: 'Piani e prezzi',
@@ -157,7 +159,7 @@ export const dictionaries = {
       openPanel: 'Cronologia ricerche',
       closePanel: 'Chiudi cronologia',
     },
-    footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
+    footer: '© 2026 MediaMatter — Press Review Tool',
   },
   en: {
     nav: { home: 'Home', pricing: 'Plans', dashboard: 'Dashboard', newsletter: 'Newsletter', feedback: 'Feedback' },
@@ -166,7 +168,7 @@ export const dictionaries = {
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        'Complete press digests for artists. Press Review Tool is part of LabelTools, a professional music-industry suite currently rolling out with progressive integrations.',
+        'Complete press digests for artists. Press Review Tool is a MediaMatter product (creative training & consulting) for the music industry.',
       cta: 'Start free',
       how: 'How it works',
       searchTitle: 'Search',
@@ -176,6 +178,8 @@ export const dictionaries = {
       exportTitle: 'Export',
       exportDesc: 'PDF, Excel, JSON, CSV. Ready for decks and archives.',
       plans: 'View plans',
+      suiteNote:
+        'Press Review Tool is part of the MediaMatter suite for artists, labels, and music teams, with progressive integration of additional professional tools.',
     },
     pricing: {
       title: 'Plans & pricing',
@@ -311,7 +315,7 @@ export const dictionaries = {
       openPanel: 'Search history',
       closePanel: 'Close history',
     },
-    footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
+    footer: '© 2026 MediaMatter — Press Review Tool',
   },
   es: {
     nav: { home: 'Inicio', pricing: 'Planes', dashboard: 'Panel', newsletter: 'Newsletter', feedback: 'Feedback' },
@@ -320,7 +324,7 @@ export const dictionaries = {
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        'Dossiers de prensa completos para artistas. Press Review Tool forma parte de LabelTools, una suite profesional para la industria musical en desarrollo e integración progresiva.',
+        'Dossiers de prensa completos para artistas. Press Review Tool es un producto MediaMatter (creative training & consulting) para la industria musical.',
       cta: 'Empezar gratis',
       how: 'Cómo funciona',
       searchTitle: 'Búsqueda',
@@ -330,6 +334,8 @@ export const dictionaries = {
       exportTitle: 'Exportar',
       exportDesc: 'PDF, Excel, JSON, CSV. Informes listos.',
       plans: 'Ver planes',
+      suiteNote:
+        'Press Review Tool forma parte de la oferta MediaMatter para artistas, sellos y equipos musicales, con integración progresiva de más herramientas profesionales.',
     },
     pricing: {
       title: 'Planes y precios',
@@ -465,7 +471,7 @@ export const dictionaries = {
       openPanel: 'Historial',
       closePanel: 'Cerrar historial',
     },
-    footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
+    footer: '© 2026 MediaMatter — Press Review Tool',
   },
   fr: {
     nav: { home: 'Accueil', pricing: 'Offres', dashboard: 'Tableau de bord', newsletter: 'Newsletter', feedback: 'Feedback' },
@@ -474,7 +480,7 @@ export const dictionaries = {
     landing: {
       title: 'Press Review Tool',
       subtitle:
-        "Revues de presse complètes pour les artistes. Press Review Tool fait partie de LabelTools, une suite professionnelle pour l'industrie musicale en développement et intégration progressive.",
+        'Revues de presse complètes pour les artistes. Press Review Tool est une offre MediaMatter (creative training & consulting) pour l’industrie musicale.',
       cta: 'Commencer gratuitement',
       how: 'Fonctionnement',
       searchTitle: 'Recherche',
@@ -484,6 +490,8 @@ export const dictionaries = {
       exportTitle: 'Export',
       exportDesc: 'PDF, Excel, JSON, CSV. Rapports prêts.',
       plans: 'Voir les offres',
+      suiteNote:
+        'Press Review Tool s’inscrit dans la suite MediaMatter pour artistes, labels et équipes musicales, avec intégration progressive d’autres outils professionnels.',
     },
     pricing: {
       title: 'Offres et tarifs',
@@ -619,6 +627,6 @@ export const dictionaries = {
       openPanel: 'Historique des recherches',
       closePanel: 'Fermer',
     },
-    footer: '© 2026 LABELTOOLS — Powered by Tosky Records®',
+    footer: '© 2026 MediaMatter — Press Review Tool',
   },
 } as const;

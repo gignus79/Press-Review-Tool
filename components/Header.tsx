@@ -10,10 +10,10 @@ import { FeedbackButton } from '@/components/FeedbackButton';
 import { useI18n } from '@/lib/i18n/context';
 import { useTheme } from 'next-themes';
 
-const LOGO_LIGHT_URL =
-  'https://toskyrecords.com/wp-content/uploads/2022/08/Logo-Tosky-email-shop.png';
-/** White mark on dark header — `public/logo-tosky-dark.png` */
-const LOGO_DARK_SRC = '/logo-tosky-dark.png';
+/** Full logo (transparent) — light UI */
+const LOGO_LIGHT_SRC = '/logo-mediamatter-full.png';
+/** White logo — dark UI */
+const LOGO_DARK_SRC = '/logo-mediamatter-white.png';
 
 export function Header() {
   const { t } = useI18n();
@@ -26,29 +26,17 @@ export function Header() {
       style={{ fontFamily: 'var(--font-prompt), sans-serif' }}
     >
       <div className="mx-auto flex min-h-14 max-w-6xl flex-col gap-2 px-3 py-2 sm:h-16 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2 sm:px-4 sm:py-0">
-        <a href="https://toskyrecords.com" className="flex shrink-0 items-center gap-2">
-          {isDark ? (
-            <Image
-              src={LOGO_DARK_SRC}
-              alt="Tosky Records"
-              width={280}
-              height={80}
-              className="h-8 w-auto max-h-[2.25rem] sm:h-9"
-              sizes="280px"
-              priority
-            />
-          ) : (
-            <Image
-              src={LOGO_LIGHT_URL}
-              alt="Tosky Records"
-              width={280}
-              height={80}
-              className="h-8 w-auto max-h-[2.25rem] sm:h-9 [filter:invert(1)]"
-              sizes="280px"
-              priority
-            />
-          )}
-        </a>
+        <Link href="/" className="flex shrink-0 items-center gap-2">
+          <Image
+            src={isDark ? LOGO_DARK_SRC : LOGO_LIGHT_SRC}
+            alt="MediaMatter"
+            width={320}
+            height={96}
+            className="h-8 w-auto max-h-[2.25rem] object-contain object-left sm:h-9"
+            sizes="(max-width: 768px) 200px, 280px"
+            priority
+          />
+        </Link>
         <div className="flex min-w-0 flex-wrap items-center justify-end gap-2 sm:gap-3 md:gap-4">
           <nav className="flex max-w-full items-center gap-3 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-4 sm:pb-0 [&::-webkit-scrollbar]:hidden">
             <Link

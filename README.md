@@ -2,7 +2,7 @@
 
 # Press Review Tool
 
-**LabelTools · Tosky Records** — real-time music press aggregation, AI-assisted classification, and pro exports for labels and artists.
+**MediaMatter** — real-time music press aggregation, AI-assisted classification, and pro exports for labels and artists.
 
 <br/>
 
@@ -91,10 +91,10 @@ See **[SECURITY.md](./SECURITY.md)** for dependency review, operational checklis
 
 <div align="center">
 
-**Press Review Tool** is a **LabelTools** module by Tosky Records — contact: **developer@toskyrecords.com**
+**Press Review Tool** by **MediaMatter** (creative training & consulting) — contact: **developer@toskyrecords.com**
 
 <br/>
 
-**LABELTOOLS** · Powered by Tosky Records
+**MediaMatter**
 
 </div>

@@ -18,8 +18,8 @@ export default function LandingPage() {
         <section className="relative overflow-hidden px-4 pb-16 pt-20 md:pt-24">
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_15%_15%,rgba(237,53,58,0.18),transparent_38%),radial-gradient(circle_at_85%_25%,rgba(0,119,132,0.22),transparent_40%)]" />
           <div className="mx-auto max-w-6xl">
-            <div className="mb-6 inline-flex items-center rounded-full border border-[var(--tosky-card-border)] bg-white/80 px-4 py-1 text-xs font-semibold tracking-wide text-[var(--tosky-secondary)] shadow-sm backdrop-blur">
-              LABELTOOLS SUITE
+            <div className="mb-6 inline-flex items-center rounded-full border border-[var(--tosky-card-border)] bg-white/80 px-4 py-1 text-xs font-semibold tracking-wide text-[var(--tosky-secondary)] shadow-sm backdrop-blur dark:bg-[var(--tosky-card)]/90">
+              MEDIAMATTER · creative training & consulting
             </div>
             <div className="grid items-center gap-10 md:grid-cols-2">
               <div>
@@ -90,8 +90,7 @@ export default function LandingPage() {
         <section className="py-16 px-4 text-center">
           <div className="mx-auto mb-8 max-w-3xl rounded-2xl border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-6 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
             <p className="text-sm leading-relaxed text-[var(--tosky-text-gray)]">
-              Press Review Tool is one module of the LabelTools ecosystem for artists, labels and music
-              teams, with progressive integration of additional professional tools.
+              {t.landing.suiteNote}
             </p>
           </div>
           <Link
