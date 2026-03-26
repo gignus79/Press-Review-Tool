@@ -89,13 +89,11 @@ See **[SECURITY.md](./SECURITY.md)** for dependency review, operational checklis
 
 ---
 
-## LabelTools · IT
-
-**Press Review Tool** è un modulo di **LabelTools**, ecosistema per editori e artisti Tosky Records. Contatto tecnico: **developer@toskyrecords.com**
-
----
-
 <div align="center">
+
+**Press Review Tool** is a **LabelTools** module by Tosky Records — contact: **developer@toskyrecords.com**
+
+<br/>
 
 **LABELTOOLS** · Powered by Tosky Records
 
