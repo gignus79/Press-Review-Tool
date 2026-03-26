@@ -1,6 +1,6 @@
 import { jsPDF } from 'jspdf';
 
-/** Tosky Records brand kit (RGB 0–255) */
+/** PDF export palette (RGB 0–255) */
 const BRAND = {
   red: [237, 53, 58] as const,
   teal: [0, 119, 132] as const,

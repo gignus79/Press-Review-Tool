@@ -1,54 +1,102 @@
-# Press Review Tool v3
+<div align="center">
 
-Rassegne stampa complete per artisti. Ricerca intelligente con Perplexity API, categorizzazione AI, export professionale.
+# Press Review Tool
 
-## Stack
+**LabelTools · Tosky Records** — real-time music press aggregation, AI-assisted classification, and pro exports for labels and artists.
 
-- **Next.js 16** (App Router)
-- **Clerk** (auth)
-- **Neon** (Postgres)
-- **Perplexity Search API** (ricerca web)
-- **Anthropic Claude** (categorizzazione, opzionale)
-- **Stripe** (piani a pagamento)
-- **Vercel** (deploy)
+<br/>
 
-## Piani
+[![Next.js](https://img.shields.io/badge/Next.js-16-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org/)
+[![React](https://img.shields.io/badge/React-19-149ECA?style=for-the-badge&logo=react&logoColor=white)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 
-| Piano   | Prezzo   | Ricerche/mese | Export                    |
-|---------|----------|---------------|---------------------------|
-| Free    | €0       | 5             | PDF, Excel, JSON, CSV     |
-| Pro     | €7,99/mo | 50            | Stesso export, più ricerche |
-| Business| €19,99/mo| 200           | Tutti + API access        |
+[![Clerk](https://img.shields.io/badge/Clerk-Auth-6C47FF?style=for-the-badge&logo=clerk&logoColor=white)](https://clerk.com/)
+[![Neon](https://img.shields.io/badge/Neon-Postgres-00E599?style=for-the-badge&logo=neon&logoColor=white)](https://neon.tech/)
+[![Stripe](https://img.shields.io/badge/Stripe-Billing-635BFF?style=for-the-badge&logo=stripe&logoColor=white)](https://stripe.com/)
+[![Vercel](https://img.shields.io/badge/Vercel-Deploy-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com/)
 
-## Setup
+[![Perplexity](https://img.shields.io/badge/Perplexity-Search-20B8CD?style=for-the-badge)](https://www.perplexity.ai/)
+[![Anthropic Claude](https://img.shields.io/badge/Anthropic-Claude-D4A574?style=for-the-badge)](https://www.anthropic.com/)
 
-1. Copia `.env.example` in `.env.local`
-2. Configura le variabili (Clerk, Perplexity, Neon, Stripe)
-3. **Database:** la prima volta che l’app usa Neon, crea automaticamente le tabelle (`users`, `searches`, `usage_tracking`). Puoi comunque eseguire `scripts/init-db.sql` a mano se preferisci.
-4. Crea prodotti e prezzi su Stripe (Pro €7,99/mo, Business €19,99/mo)
-5. Configura webhook Stripe: `POST /api/stripe/webhook`
-6. **Webhook Clerk** (Dashboard → Webhooks → Add endpoint):
-   - **URL** (sostituisci con il tuo dominio):  
-     `https://TUO_PROGETTO.vercel.app/api/webhooks/clerk`  
-     In locale usa un tunnel (es. ngrok): `https://xxxx.ngrok-free.app/api/webhooks/clerk`
-   - **Eventi**: `user.created` (e opzionalmente `user.updated`)
-   - Copia il **Signing secret** in `CLERK_WEBHOOK_SECRET` (`.env.local` / Vercel)
+<br/>
 
-```bash
-npm install
-npm run dev
-```
+[Features](#features) · [Quick start](#quick-start) · [Environment](#environment) · [Operations](#operations-and-ai-keys) · [Security](#security)
 
-## Deploy su Vercel
-
-1. Connetti il repo GitHub
-2. Aggiungi le variabili d'ambiente
-3. Deploy automatico su push a `main`
-
-## Brand
-
-Tosky Records® — Brand kit 2026. Colori, font Prompt, pill buttons.
+</div>
 
 ---
 
-© 2026 LABELTOOLS — Powered by Tosky Records®
+## Features
+
+| Area | Details |
+|------|---------|
+| **Search** | Artist / release queries via Perplexity-backed retrieval with fallbacks. |
+| **Classification** | Optional Anthropic Claude enrichment; automatic heuristic fallback if the API is unavailable. |
+| **Exports** | PDF, Excel, CSV, JSON from saved searches. |
+| **Auth & billing** | Clerk authentication; Stripe subscriptions (Pro / Business) with plan sync. |
+| **Fair use** | Monthly search limits by tier; Free-tier guardrails by identity (normalized email) and IP. |
+
+Architecture: **Next.js App Router** (server routes + Neon Postgres), **Clerk** middleware on protected routes, **Stripe** webhooks for subscription state.
+
+---
+
+## Quick start
+
+```bash
+npm install
+cp .env.example .env.local   # then fill values
+npm run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+```bash
+npm run lint    # ESLint
+npm run build   # production build
+```
+
+---
+
+## Environment
+
+Copy **`.env.example`** → **`.env.local`**. Minimum categories:
+
+| Group | Purpose |
+|--------|---------|
+| **Clerk** | Publishable + secret keys, URLs, webhook secret for user sync. |
+| **Neon** | `DATABASE_URL` (serverless Postgres). |
+| **Perplexity** | `PERPLEXITY_API_KEY` — primary search backend. |
+| **Anthropic** | `ANTHROPIC_API_KEY` — optional categorization (see below). |
+| **Stripe** | Secret, webhook secret, price IDs, publishable key. |
+| **App** | `NEXT_PUBLIC_APP_URL`, optional `FREE_ACCOUNTS_PER_IP_LIMIT`. |
+
+---
+
+## Operations and AI keys
+
+- **Perplexity** powers live search; keep `PERPLEXITY_API_KEY` valid in production.
+- **Anthropic (Claude)** is used for richer categorization. Billing is **separate** from end-user Pro/Business plans:
+  - Top up credits in the **[Anthropic Console](https://console.anthropic.com/)** (API), not only the consumer chat product.
+  - If the key is disabled, rotated, or out of credits, the app **falls back** to heuristic labels so searches still complete.
+- After rotating or re-enabling an API key in the provider dashboard, **redeploy** or update the env var on Vercel so runtime picks up the change.
+
+---
+
+## Security
+
+See **[SECURITY.md](./SECURITY.md)** for dependency review, operational checklist, and reporting. Manual smoke tests: **[docs/VERIFICATION.md](./docs/VERIFICATION.md)**.
+
+---
+
+## LabelTools · IT
+
+**Press Review Tool** è un modulo di **LabelTools**, ecosistema per editori e artisti Tosky Records. Contatto tecnico: **developer@toskyrecords.com**
+
+---
+
+<div align="center">
+
+**LABELTOOLS** · Powered by Tosky Records
+
+</div>

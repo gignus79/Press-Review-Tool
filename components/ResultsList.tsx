@@ -1,5 +1,6 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { ExportButtons } from './ExportButtons';
 import { EmailPdfButton } from './EmailPdfButton';
 import { useI18n } from '@/lib/i18n/context';
@@ -24,6 +25,13 @@ interface ResultsListProps {
 
 const TYPE_ORDER = ['Review', 'Interview', 'Article', 'News', 'Streaming', 'Other'] as const;
 
+function relevanceScore(rel: string): number {
+  if (rel === 'High') return 3;
+  if (rel === 'Medium') return 2;
+  if (rel === 'Low') return 1;
+  return 0;
+}
+
 function labelForContentType(
   type: (typeof TYPE_ORDER)[number],
   tr: Dictionary['results']
@@ -46,6 +54,7 @@ function labelForContentType(
 
 export function ResultsList({ query, results, exportId }: ResultsListProps) {
   const { t } = useI18n();
+  const [sortOrder, setSortOrder] = useState<'desc' | 'asc'>('desc');
 
   const relLabel = (rel: string) => {
     if (rel === 'High') return t.results.relHigh;
@@ -53,10 +62,20 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
     return t.results.relLow;
   };
 
-  const byType = TYPE_ORDER.reduce<Record<string, Result[]>>((acc, ty) => {
-    acc[ty] = results.filter((r) => (r.content_type || 'Other') === ty);
-    return acc;
-  }, {});
+  const byType = useMemo(
+    () =>
+      TYPE_ORDER.reduce<Record<string, Result[]>>((acc, ty) => {
+        const group = results.filter((r) => (r.content_type || 'Other') === ty);
+        group.sort((a, b) => {
+          const aScore = relevanceScore(a.relevance);
+          const bScore = relevanceScore(b.relevance);
+          return sortOrder === 'desc' ? bScore - aScore : aScore - bScore;
+        });
+        acc[ty] = group;
+        return acc;
+      }, {}),
+    [results, sortOrder]
+  );
 
   return (
     <div className="bg-[var(--tosky-card)] p-6 rounded-lg shadow-[0_2px_4px_rgba(0,0,0,0.1)] border border-[var(--tosky-card-border)]">
@@ -64,7 +83,7 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
         {t.results.title} ({results.length})
       </h2>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="flex flex-wrap items-center gap-3">
         <ExportButtons exportId={exportId} />
         <EmailPdfButton
           exportId={exportId}
@@ -72,6 +91,20 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
           album={query.album}
           resultCount={results.length}
         />
+        <div className="ml-auto flex items-center gap-2">
+          <label htmlFor="relevance-sort" className="text-xs font-semibold text-[var(--tosky-text-gray)]">
+            {t.results.sortByRelevance}
+          </label>
+          <select
+            id="relevance-sort"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value as 'desc' | 'asc')}
+            className="rounded-md border border-[var(--tosky-border)] bg-[var(--tosky-white)] px-2.5 py-1.5 text-xs font-semibold text-[var(--tosky-dark)]"
+          >
+            <option value="desc">{t.results.relevanceDesc}</option>
+            <option value="asc">{t.results.relevanceAsc}</option>
+          </select>
+        </div>
       </div>
 
       <div className="mt-8 space-y-8">

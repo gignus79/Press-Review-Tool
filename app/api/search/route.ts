@@ -1,4 +1,4 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { sql, ensureSchema } from '@/lib/db';
 import { buildSearchQueries } from '@/lib/perplexity';
@@ -7,6 +7,7 @@ import { categorizeResults } from '@/lib/categorize';
 import { getSearchLimit } from '@/lib/tier-utils';
 import { resultInDateRange, parseResultDate } from '@/lib/date-result-filter';
 import { FREE_ACCOUNTS_PER_IP_LIMIT, getClientIp, hashIp } from '@/lib/ip-guard';
+import { freeTierAbuseIdentityKey } from '@/lib/email-identity';
 import { randomUUID } from 'crypto';
 
 export async function POST(req: Request) {
@@ -67,18 +68,41 @@ export async function POST(req: Request) {
     if (tier === 'free') {
       const clientIp = getClientIp(req);
       if (clientIp) {
+        const clerkUser = await currentUser();
+        const primaryFromClerk =
+          clerkUser?.primaryEmailAddress?.emailAddress ??
+          clerkUser?.emailAddresses?.[0]?.emailAddress ??
+          '';
+        if (primaryFromClerk && user) {
+          await sql`
+            UPDATE users
+            SET email = ${primaryFromClerk}
+            WHERE id = ${user.id}
+              AND (
+                email IS NULL
+                OR TRIM(email) = ''
+                OR LOWER(TRIM(email)) <> LOWER(TRIM(${primaryFromClerk}))
+              )
+          `;
+        }
+
         const ipHash = hashIp(clientIp);
         await sql`
           INSERT INTO ip_user_guard (ip_hash, clerk_user_id, month_year)
           VALUES (${ipHash}, ${userId}, ${monthYear})
           ON CONFLICT (ip_hash, clerk_user_id, month_year) DO NOTHING
         `;
-        const ipUsers = await sql`
-          SELECT COUNT(DISTINCT clerk_user_id)::int AS cnt
-          FROM ip_user_guard
-          WHERE ip_hash = ${ipHash} AND month_year = ${monthYear}
+        const ipRows = await sql`
+          SELECT g.clerk_user_id, u.email
+          FROM ip_user_guard g
+          INNER JOIN users u ON u.clerk_user_id = g.clerk_user_id
+          WHERE g.ip_hash = ${ipHash} AND g.month_year = ${monthYear}
         `;
-        const usersFromIp = ipUsers[0]?.cnt ?? 0;
+        const identityKeys = new Set<string>();
+        for (const row of ipRows as { clerk_user_id: string; email: string }[]) {
+          identityKeys.add(freeTierAbuseIdentityKey(row.email, row.clerk_user_id));
+        }
+        const usersFromIp = identityKeys.size;
         if (usersFromIp > FREE_ACCOUNTS_PER_IP_LIMIT) {
           console.warn('[SECURITY][IP_LIMIT_REACHED]', {
             userId,

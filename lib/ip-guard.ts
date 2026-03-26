@@ -1,6 +1,9 @@
 import { createHash } from 'crypto';
 
-const FREE_ACCOUNTS_PER_IP_LIMIT = Number(process.env.FREE_ACCOUNTS_PER_IP_LIMIT || 2);
+const parsedLimit = Number(process.env.FREE_ACCOUNTS_PER_IP_LIMIT);
+/** Max distinct people (by normalized email, else Clerk id) per IP per month on Free. */
+const FREE_ACCOUNTS_PER_IP_LIMIT =
+  Number.isFinite(parsedLimit) && parsedLimit >= 1 ? parsedLimit : 4;
 
 export function getClientIp(request: Request): string | null {
   const xff = request.headers.get('x-forwarded-for');

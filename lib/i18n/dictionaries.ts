@@ -144,6 +144,9 @@ export const dictionaries = {
       relHigh: 'Alta',
       relMedium: 'Media',
       relLow: 'Bassa',
+      sortByRelevance: 'Ordina per rilevanza',
+      relevanceDesc: 'Decrescente (Alta > Bassa)',
+      relevanceAsc: 'Crescente (Bassa > Alta)',
     },
     sidebar: {
       title: 'Ultime ricerche',
@@ -293,6 +296,9 @@ export const dictionaries = {
       relHigh: 'High',
       relMedium: 'Medium',
       relLow: 'Low',
+      sortByRelevance: 'Sort by relevance',
+      relevanceDesc: 'Descending (High > Low)',
+      relevanceAsc: 'Ascending (Low > High)',
     },
     sidebar: {
       title: 'Recent searches',
@@ -442,6 +448,9 @@ export const dictionaries = {
       relHigh: 'Alta',
       relMedium: 'Media',
       relLow: 'Baja',
+      sortByRelevance: 'Ordenar por relevancia',
+      relevanceDesc: 'Descendente (Alta > Baja)',
+      relevanceAsc: 'Ascendente (Baja > Alta)',
     },
     sidebar: {
       title: 'Búsquedas recientes',
@@ -591,6 +600,9 @@ export const dictionaries = {
       relHigh: 'Élevée',
       relMedium: 'Moyenne',
       relLow: 'Faible',
+      sortByRelevance: 'Trier par pertinence',
+      relevanceDesc: 'Decroissant (Elevee > Faible)',
+      relevanceAsc: 'Croissant (Faible > Elevee)',
     },
     sidebar: {
       title: 'Recherches récentes',

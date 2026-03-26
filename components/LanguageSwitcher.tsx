@@ -17,7 +17,7 @@ export function LanguageSwitcher() {
           onClick={() => setLocale(l)}
           className={`rounded-full px-2.5 py-1 text-xs font-bold transition-colors ${
             locale === l
-              ? 'bg-[var(--tosky-dark)] text-white'
+              ? 'bg-[var(--tosky-primary)] text-white'
               : 'text-[var(--tosky-base-text)] hover:bg-[var(--tosky-light-gray)]'
           }`}
         >
