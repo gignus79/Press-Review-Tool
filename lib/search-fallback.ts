@@ -1,5 +1,6 @@
 import { expandArtistVariants } from '@/lib/artist-variants';
 import { perplexitySearch, type PerplexitySearchResult } from '@/lib/perplexity';
+import { sanitizePhraseForQuery } from '@/lib/search-input';
 
 const MIN_RESULTS_BEFORE_FALLBACK = 3;
 
@@ -20,8 +21,8 @@ function mergeDedupe(
 
 /** Query più larghe se quelle precise non restituiscono abbastanza risultati. */
 export function buildFallbackSearchQueries(artist: string, album: string): string[] {
-  const a = artist.trim().replace(/\s+/g, ' ');
-  const b = album.trim().replace(/\s+/g, ' ');
+  const a = sanitizePhraseForQuery(artist.trim().replace(/\s+/g, ' '));
+  const b = sanitizePhraseForQuery(album.trim().replace(/\s+/g, ' '));
   const out: string[] = [];
 
   if (a && b) {
@@ -51,8 +52,8 @@ export function buildFallbackSearchQueries(artist: string, album: string): strin
 
 /** Singola ondata “larga” senza filtro lingua. */
 export function buildBroadQueries(artist: string, album: string): string[] {
-  const a = artist.trim();
-  const b = album.trim();
+  const a = sanitizePhraseForQuery(artist.trim());
+  const b = sanitizePhraseForQuery(album.trim());
   if (a && b) return [`${a} ${b}`, `${a} ${b} music press`];
   if (a) return [`${a} music`, `${a}`];
   if (b) return [`${b} album`, `${b} music`];

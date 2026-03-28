@@ -8,7 +8,18 @@ import { getSearchLimit } from '@/lib/tier-utils';
 import { resultInDateRange, parseResultDate } from '@/lib/date-result-filter';
 import { FREE_ACCOUNTS_PER_IP_LIMIT, getClientIp, hashIp } from '@/lib/ip-guard';
 import { freeTierAbuseIdentityKey } from '@/lib/email-identity';
+import {
+  coerceContentFilter,
+  coerceMaxResults,
+  coerceSearchTextField,
+  sanitizePhraseForQuery,
+} from '@/lib/search-input';
 import { randomUUID } from 'crypto';
+
+export const runtime = 'nodejs';
+export const maxDuration = 120;
+
+const ALLOWED_SEARCH_LANG = new Set(['en', 'it', 'es', 'fr', 'multi']);
 
 export async function POST(req: Request) {
   try {
@@ -18,16 +29,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
 
-    const body = await req.json();
-    const {
-      artist,
-      album,
-      language = 'en',
-      max_results = 50,
-      content_filter = 'All',
-      date_from: dateFromRaw,
-      date_to: dateToRaw,
-    } = body;
+    let body: Record<string, unknown>;
+    try {
+      body = (await req.json()) as Record<string, unknown>;
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+    }
+
+    const dateFromRaw = body.date_from;
+    const dateToRaw = body.date_to;
+
+    const artist = sanitizePhraseForQuery(coerceSearchTextField(body.artist));
+    const album = sanitizePhraseForQuery(coerceSearchTextField(body.album));
+    const language =
+      typeof body.language === 'string' && ALLOWED_SEARCH_LANG.has(body.language)
+        ? body.language
+        : 'en';
+    const max_results = coerceMaxResults(body.max_results);
+    const content_filter = coerceContentFilter(body.content_filter);
 
     const dateFrom =
       typeof dateFromRaw === 'string' && dateFromRaw.trim()

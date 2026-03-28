@@ -1,4 +1,5 @@
 import { expandArtistVariants, normalizeWhitespace } from '@/lib/artist-variants';
+import { sanitizePhraseForQuery } from '@/lib/search-input';
 
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/search';
 
@@ -77,28 +78,31 @@ export async function perplexitySearch(
 const MAX_PRIMARY_QUERIES = 10;
 
 function pushArtistAlbumQueries(queries: string[], artist: string, album: string) {
+  const a = sanitizePhraseForQuery(artist);
+  const b = sanitizePhraseForQuery(album);
   queries.push(
-    `"${artist}" "${album}" review`,
-    `${artist} ${album} music`,
-    `${artist} ${album} interview`,
-    `${artist} ${album} recensione`,
-    `${artist} ${album} press`
+    `"${a}" "${b}" review`,
+    `${a} ${b} music`,
+    `${a} ${b} interview`,
+    `${a} ${b} recensione`,
+    `${a} ${b} press`
   );
 }
 
 function pushArtistOnlyQueries(queries: string[], artist: string) {
+  const a = sanitizePhraseForQuery(artist);
   queries.push(
-    `"${artist}" music review`,
-    `${artist} band news`,
-    `${artist} interview`,
-    `${artist} latest album`,
-    `${artist} musician press`
+    `"${a}" music review`,
+    `${a} band news`,
+    `${a} interview`,
+    `${a} latest album`,
+    `${a} musician press`
   );
 }
 
 export function buildSearchQueries(artist: string, album: string): string[] {
   const queries: string[] = [];
-  const albumNorm = normalizeWhitespace(album);
+  const albumNorm = sanitizePhraseForQuery(normalizeWhitespace(album));
 
   if (artist.trim()) {
     const variants = expandArtistVariants(artist);

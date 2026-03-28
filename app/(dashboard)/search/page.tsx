@@ -7,6 +7,7 @@ import { ResultsList } from '@/components/ResultsList';
 import { GlassLoadingIndicator } from '@/components/GlassLoadingIndicator';
 import { PageBrandLabel } from '@/components/PageBrandLabel';
 import { useI18n } from '@/lib/i18n/context';
+import { parseJsonFromResponse } from '@/lib/parse-api-json';
 
 type ResultRow = {
   title: string;
@@ -64,7 +65,9 @@ function SearchPageInner() {
           { credentials: 'include' }
         );
         if (!res.ok || cancelled) return;
-        const data = (await res.json()) as {
+        const parsed = await parseJsonFromResponse(res);
+        if (!parsed.ok || cancelled) return;
+        const data = parsed.data as {
           exportId: string;
           query: { artist?: string; album?: string; language?: string };
           results: ResultRow[];
@@ -110,7 +113,19 @@ function SearchPageInner() {
               credentials: 'include',
               body: JSON.stringify(params),
             });
-            const data = await res.json();
+            const parsed = await parseJsonFromResponse(res);
+            if (!parsed.ok) {
+              alert(t.search.unexpectedResponse);
+              return;
+            }
+            const data = parsed.data as {
+              code?: string;
+              error?: string;
+              query?: ResultsState['query'];
+              results?: ResultRow[];
+              exportId?: string;
+              remainingSearches?: number;
+            };
             if (!res.ok) {
               if (res.status === 429 && data?.code === 'FREE_LIMIT_REACHED') {
                 setLimitPopup({
@@ -128,9 +143,13 @@ function SearchPageInner() {
               }
               throw new Error(data.error || 'Search failed');
             }
+            if (typeof data.exportId !== 'string' || !data.exportId) {
+              alert(t.search.unexpectedResponse);
+              return;
+            }
             setResults({
-              query: data.query,
-              results: data.results,
+              query: data.query ?? {},
+              results: Array.isArray(data.results) ? data.results : [],
               exportId: data.exportId,
               remainingSearches: data.remainingSearches,
             });
