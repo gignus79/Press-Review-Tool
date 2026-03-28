@@ -1,4 +1,9 @@
 import { expandArtistVariants, normalizeWhitespace } from '@/lib/artist-variants';
+import {
+  capResultList,
+  clampRawSearchHit,
+  MAX_RESULTS_IN_PIPELINE,
+} from '@/lib/result-size-limits';
 import { sanitizePhraseForQuery } from '@/lib/search-input';
 
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/search';
@@ -60,19 +65,16 @@ export async function perplexitySearch(
       for (const r of data.results) {
         if (r.url && !seenUrls.has(r.url)) {
           seenUrls.add(r.url);
-          allResults.push({
-            title: r.title || '',
-            url: r.url,
-            snippet: r.snippet || '',
-            date: r.date,
-            last_updated: r.last_updated,
-          });
+          allResults.push(clampRawSearchHit(r));
+          if (allResults.length >= MAX_RESULTS_IN_PIPELINE) {
+            return allResults;
+          }
         }
       }
     }
   }
 
-  return allResults;
+  return capResultList(allResults, MAX_RESULTS_IN_PIPELINE);
 }
 
 const MAX_PRIMARY_QUERIES = 10;

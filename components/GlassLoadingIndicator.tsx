@@ -3,10 +3,11 @@
 import { clsx } from 'clsx';
 import { useEffect, useMemo, useState } from 'react';
 
+/** box = contenitore min-width; spinner = diametro anello brand */
 const SIZE_MAP = {
-  sm: { box: 48, orbitR: 18, dot: 6 },
-  md: { box: 72, orbitR: 28, dot: 8 },
-  lg: { box: 96, orbitR: 38, dot: 10 },
+  sm: { box: 48, spinner: 30 },
+  md: { box: 72, spinner: 44 },
+  lg: { box: 96, spinner: 58 },
 } as const;
 
 export type GlassLoadingSize = keyof typeof SIZE_MAP;
@@ -43,7 +44,7 @@ function useRotatingMessage(messages: string[], intervalMs: number) {
 }
 
 /**
- * Loader glass + orbita CSS; testo con contrasto in light/dark; messaggi opzionali a rotazione.
+ * Loader glass + anello rotante (brand primary/secondary); messaggi opzionali a rotazione.
  */
 export function GlassLoadingIndicator({
   message,
@@ -52,7 +53,7 @@ export function GlassLoadingIndicator({
   className,
   rotateIntervalMs = 2800,
 }: GlassLoadingIndicatorProps) {
-  const { box, orbitR, dot } = SIZE_MAP[size];
+  const { box, spinner } = SIZE_MAP[size];
   const list = messages?.length ? messages : message ? [message] : [];
   const rotating = useRotatingMessage(list, rotateIntervalMs);
   const label = rotating || 'Loading content, please wait.';
@@ -75,46 +76,25 @@ export function GlassLoadingIndicator({
       <span className="sr-only">{label}</span>
 
       <div
-        className="relative shrink-0"
+        className="relative flex shrink-0 items-center justify-center"
         style={{ width: box, height: box }}
         aria-hidden
       >
         <div
-          className="absolute rounded-full border-2 border-black/10 dark:border-white/15"
+          className="rounded-full"
           style={{
-            inset: Math.max(0, (box - (orbitR + dot) * 2) / 2),
-            opacity: 0.9,
-            animation: 'prt-orbit-pulse 2.8s ease-in-out infinite',
+            width: spinner,
+            height: spinner,
+            borderWidth: 3,
+            borderStyle: 'solid',
+            borderColor: 'var(--tosky-border)',
+            borderTopColor: 'var(--tosky-primary)',
+            borderRightColor: 'var(--tosky-secondary)',
+            boxShadow:
+              '0 0 0 1px color-mix(in srgb, var(--tosky-primary) 12%, transparent), 0 0 24px color-mix(in srgb, var(--tosky-primary) 14%, transparent)',
+            animation: 'prt-orbit-spin 0.88s linear infinite',
           }}
         />
-        {[0, 1, 2].map((i) => (
-          <div
-            key={i}
-            className="absolute inset-0"
-            style={{
-              animation: 'prt-orbit-spin 2.4s linear infinite',
-              animationDelay: `${-i * (2.4 / 3)}s`,
-            }}
-          >
-            <span
-              className="absolute left-1/2 rounded-full shadow-md"
-              style={{
-                top: `calc(50% - ${orbitR}px - ${dot / 2}px)`,
-                width: dot,
-                height: dot,
-                marginLeft: -(dot / 2),
-                background:
-                  i === 0
-                    ? 'linear-gradient(135deg, #ff006e, #fb5607)'
-                    : i === 1
-                      ? 'linear-gradient(135deg, #8338ec, #3a86ff)'
-                      : 'linear-gradient(135deg, #06ffa5, #ffbe0b)',
-                animation: 'prt-orbit-pulse 1.4s ease-in-out infinite',
-                animationDelay: `${i * 0.18}s`,
-              }}
-            />
-          </div>
-        ))}
       </div>
 
       {list.length > 0 ? (

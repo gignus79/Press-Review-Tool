@@ -1,5 +1,6 @@
 import { expandArtistVariants } from '@/lib/artist-variants';
 import { perplexitySearch, type PerplexitySearchResult } from '@/lib/perplexity';
+import { capResultList, MAX_RESULTS_IN_PIPELINE } from '@/lib/result-size-limits';
 import { sanitizePhraseForQuery } from '@/lib/search-input';
 
 const MIN_RESULTS_BEFORE_FALLBACK = 3;
@@ -71,10 +72,13 @@ export async function runPerplexityWithFallback(
 ): Promise<PerplexitySearchResult[]> {
   const { maxResults, language } = options;
 
-  let raw = await perplexitySearch(primaryQueries, {
-    maxResults: Math.min(maxResults, 20),
-    language,
-  });
+  let raw = capResultList(
+    await perplexitySearch(primaryQueries, {
+      maxResults: Math.min(maxResults, 20),
+      language,
+    }),
+    MAX_RESULTS_IN_PIPELINE
+  );
 
   if (raw.length >= MIN_RESULTS_BEFORE_FALLBACK) {
     return raw;
@@ -88,7 +92,7 @@ export async function runPerplexityWithFallback(
       maxResults: Math.min(maxResults, 20),
       language: undefined,
     });
-    raw = mergeDedupe(raw, extra);
+    raw = capResultList(mergeDedupe(raw, extra), MAX_RESULTS_IN_PIPELINE);
   }
 
   if (raw.length >= MIN_RESULTS_BEFORE_FALLBACK) {
@@ -101,8 +105,8 @@ export async function runPerplexityWithFallback(
       maxResults: Math.min(maxResults, 20),
       language: undefined,
     });
-    raw = mergeDedupe(raw, extra2);
+    raw = capResultList(mergeDedupe(raw, extra2), MAX_RESULTS_IN_PIPELINE);
   }
 
-  return raw;
+  return capResultList(raw, MAX_RESULTS_IN_PIPELINE);
 }
