@@ -2,6 +2,7 @@ import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { ensureSchema, sql } from '@/lib/db';
 import { stripe } from '@/lib/stripe';
+import { resolveEffectiveTier } from '@/lib/whitelisted-emails';
 import { randomUUID } from 'crypto';
 
 type Tier = 'free' | 'pro' | 'business';
@@ -41,7 +42,10 @@ export async function GET() {
     }
 
     const clerkUser = await currentUser();
-    const primaryEmail = clerkUser?.emailAddresses?.[0]?.emailAddress ?? '';
+    const primaryEmail =
+      clerkUser?.primaryEmailAddress?.emailAddress ??
+      clerkUser?.emailAddresses?.[0]?.emailAddress ??
+      '';
 
     let row = await sql`
       SELECT id, email, tier, stripe_customer_id, stripe_subscription_id
@@ -198,6 +202,8 @@ export async function GET() {
         console.error('Plan reconciliation with Stripe failed:', syncErr);
       }
     }
+
+    tier = resolveEffectiveTier(tier, primaryEmail);
 
     return NextResponse.json(
       { tier, canManageSubscription },

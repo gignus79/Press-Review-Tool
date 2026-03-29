@@ -1,6 +1,8 @@
 import { auth, currentUser } from '@clerk/nextjs/server';
 import { sql, ensureSchema } from '@/lib/db';
+import type { Tier } from '@/lib/tier-utils';
 import { getSearchLimit } from '@/lib/tier-utils';
+import { resolveEffectiveTier } from '@/lib/whitelisted-emails';
 import { DashboardPageContent } from '@/components/DashboardPageContent';
 
 export default async function DashboardPage() {
@@ -8,14 +10,16 @@ export default async function DashboardPage() {
   if (!userId) return null;
 
   await ensureSchema();
+  const clerkUser = await currentUser();
   const userResult = (await sql`
     SELECT id, tier FROM users WHERE clerk_user_id = ${userId}
   `) as Array<{ id: string; tier: string }>;
   let user = userResult[0];
 
   if (!user) {
-    const cu = await currentUser();
-    const email = cu?.emailAddresses?.[0]?.emailAddress;
+    const email =
+      clerkUser?.primaryEmailAddress?.emailAddress ??
+      clerkUser?.emailAddresses?.[0]?.emailAddress;
     if (email) {
       const byEmail = (await sql`
         SELECT id, tier
@@ -34,7 +38,12 @@ export default async function DashboardPage() {
     }
   }
 
-  const tier = (user?.tier as 'free' | 'pro' | 'business') ?? 'free';
+  const primaryEmail =
+    clerkUser?.primaryEmailAddress?.emailAddress ??
+    clerkUser?.emailAddresses?.[0]?.emailAddress ??
+    '';
+  const dbTier = (user?.tier as Tier) ?? 'free';
+  const tier = resolveEffectiveTier(dbTier, primaryEmail);
 
   const monthYear = new Date().toISOString().slice(0, 7);
   const usageResult = user

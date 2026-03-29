@@ -212,9 +212,12 @@ export const dictionaries = {
       sortDateAsc: 'Data: meno recenti',
       filterSection: 'Filtra risultati',
       filterSearchLabel: 'Testo',
-      filterSearchPlaceholder: 'Cerca nel titolo, descrizione o fonte…',
+      filterSearchPlaceholder: 'Cerca in titolo, descrizione, fonte o URL…',
       filterTypesLabel: 'Tipologia',
       filterTypeAll: 'Tutti i tipi',
+      filterHidAll:
+        'Il filtro testuale ha nascosto tutti i {count} risultati (spesso in inglese compare solo il cognome o parole diverse). Svuota il campo o prova altre parole chiave.',
+      filterClearText: 'Svuota filtro testo',
     },
     sidebar: {
       title: 'Ultime ricerche',
@@ -432,9 +435,12 @@ export const dictionaries = {
       sortDateAsc: 'Date: oldest first',
       filterSection: 'Filter results',
       filterSearchLabel: 'Text',
-      filterSearchPlaceholder: 'Search in title, description, or source…',
+      filterSearchPlaceholder: 'Search title, description, source, or URL…',
       filterTypesLabel: 'Type',
       filterTypeAll: 'All types',
+      filterHidAll:
+        'The text filter hid all {count} results (English coverage often uses only the last name or different wording). Clear the field or try other keywords.',
+      filterClearText: 'Clear text filter',
     },
     sidebar: {
       title: 'Recent searches',
@@ -652,9 +658,12 @@ export const dictionaries = {
       sortDateAsc: 'Fecha: más antiguas',
       filterSection: 'Filtrar resultados',
       filterSearchLabel: 'Texto',
-      filterSearchPlaceholder: 'Buscar en título, descripción o fuente…',
+      filterSearchPlaceholder: 'Buscar en título, descripción, fuente o URL…',
       filterTypesLabel: 'Tipo',
       filterTypeAll: 'Todos los tipos',
+      filterHidAll:
+        'El filtro de texto ocultó los {count} resultados (a veces solo aparece el apellido u otras palabras). Vacía el campo o prueba otras palabras clave.',
+      filterClearText: 'Vaciar filtro de texto',
     },
     sidebar: {
       title: 'Búsquedas recientes',
@@ -872,9 +881,12 @@ export const dictionaries = {
       sortDateAsc: 'Date : plus anciennes',
       filterSection: 'Filtrer les résultats',
       filterSearchLabel: 'Texte',
-      filterSearchPlaceholder: 'Rechercher dans le titre, la description ou la source…',
+      filterSearchPlaceholder: 'Rechercher dans le titre, la description, la source ou l’URL…',
       filterTypesLabel: 'Type',
       filterTypeAll: 'Tous les types',
+      filterHidAll:
+        'Le filtre texte a masqué les {count} résultats (en anglais, souvent seul le nom de famille apparaît). Videz le champ ou essayez d’autres mots-clés.',
+      filterClearText: 'Effacer le filtre texte',
     },
     sidebar: {
       title: 'Recherches récentes',

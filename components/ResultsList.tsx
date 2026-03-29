@@ -6,6 +6,7 @@ import { EmailPdfButton } from './EmailPdfButton';
 import { useI18n } from '@/lib/i18n/context';
 import type { Dictionary } from '@/lib/i18n/dictionaries';
 import { parseResultDate } from '@/lib/date-result-filter';
+import { matchesResultTextFilter } from '@/lib/result-text-filter';
 
 interface Result {
   title: string;
@@ -84,13 +85,6 @@ function labelForContentType(
   }
 }
 
-function matchesTextFilter(r: Result, q: string): boolean {
-  const s = q.trim().toLowerCase();
-  if (!s) return true;
-  const hay = `${r.title} ${r.description} ${r.source}`.toLowerCase();
-  return hay.includes(s);
-}
-
 export function ResultsList({ query, results, exportId }: ResultsListProps) {
   const { t } = useI18n();
   const [sortMode, setSortMode] = useState<SortMode>('match-desc');
@@ -102,7 +96,15 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
       if (typeFilter !== 'all' && (r.content_type || 'Other') !== typeFilter) {
         return false;
       }
-      return matchesTextFilter(r, textFilter);
+      return matchesResultTextFilter(
+        {
+          title: r.title,
+          description: r.description,
+          source: r.source,
+          url: r.url,
+        },
+        textFilter
+      );
     });
   }, [results, textFilter, typeFilter]);
 
@@ -134,6 +136,21 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
         <div className="text-xs font-bold uppercase tracking-wide text-[var(--tosky-text-gray)]">
           {t.results.filterSection}
         </div>
+        {filtered.length === 0 && results.length > 0 && (
+          <div
+            role="status"
+            className="rounded-lg border border-amber-200/80 bg-amber-50/90 px-3 py-2.5 text-sm text-amber-950 dark:border-amber-500/40 dark:bg-amber-950/40 dark:text-amber-100"
+          >
+            <p className="leading-relaxed">{t.results.filterHidAll.replace('{count}', String(results.length))}</p>
+            <button
+              type="button"
+              onClick={() => setTextFilter('')}
+              className="mt-2 text-sm font-semibold text-[var(--tosky-primary)] underline underline-offset-2 hover:opacity-90"
+            >
+              {t.results.filterClearText}
+            </button>
+          </div>
+        )}
         <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
           <div className="min-w-0 flex-1">
             <label htmlFor="results-text-filter" className="mb-1 block text-xs font-semibold text-[var(--tosky-text-gray)]">
@@ -141,7 +158,8 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
             </label>
             <input
               id="results-text-filter"
-              type="search"
+              type="text"
+              autoComplete="off"
               value={textFilter}
               onChange={(e) => setTextFilter(e.target.value)}
               placeholder={t.results.filterSearchPlaceholder}

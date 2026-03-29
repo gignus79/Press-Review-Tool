@@ -270,6 +270,7 @@ function SearchPageInner() {
 
       {results && results.results.length > 0 && (
         <ResultsList
+          key={results.exportId}
           query={results.query}
           results={results.results}
           exportId={results.exportId}

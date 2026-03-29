@@ -5,7 +5,9 @@ import { buildSearchQueries } from '@/lib/perplexity';
 import { runPerplexityWithFallback } from '@/lib/search-fallback';
 import { categorizeResults } from '@/lib/categorize';
 import { rankPressSearchResults } from '@/lib/search-rank';
+import type { Tier } from '@/lib/tier-utils';
 import { getSearchLimit } from '@/lib/tier-utils';
+import { resolveEffectiveTier } from '@/lib/whitelisted-emails';
 import { resultInDateRange, parseResultDate } from '@/lib/date-result-filter';
 import { FREE_ACCOUNTS_PER_IP_LIMIT, getClientIp, hashIp } from '@/lib/ip-guard';
 import { freeTierAbuseIdentityKey } from '@/lib/email-identity';
@@ -92,17 +94,19 @@ export async function POST(req: Request) {
       `.then((r) => r[0]);
     }
 
-    const tier = (user?.tier as 'free' | 'pro' | 'business') ?? 'free';
+    const clerkUserEarly = await currentUser();
+    const primaryEmail =
+      clerkUserEarly?.primaryEmailAddress?.emailAddress ??
+      clerkUserEarly?.emailAddresses?.[0]?.emailAddress ??
+      '';
+    const dbTier = (user?.tier as Tier) ?? 'free';
+    const tier = resolveEffectiveTier(dbTier, primaryEmail);
     const limit = getSearchLimit(tier);
 
     if (tier === 'free') {
       const clientIp = getClientIp(req);
       if (clientIp) {
-        const clerkUser = await currentUser();
-        const primaryFromClerk =
-          clerkUser?.primaryEmailAddress?.emailAddress ??
-          clerkUser?.emailAddresses?.[0]?.emailAddress ??
-          '';
+        const primaryFromClerk = primaryEmail;
         if (primaryFromClerk && user) {
           await sql`
             UPDATE users

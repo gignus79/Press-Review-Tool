@@ -1,7 +1,9 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { sql, ensureSchema } from '@/lib/db';
+import type { Tier } from '@/lib/tier-utils';
 import { canExport } from '@/lib/tier-utils';
+import { resolveEffectiveTier } from '@/lib/whitelisted-emails';
 
 export const runtime = 'nodejs';
 
@@ -48,7 +50,13 @@ export async function GET(
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
-    const tier = (user.tier as 'free' | 'pro' | 'business') ?? 'free';
+    const clerkUser = await currentUser();
+    const primaryEmail =
+      clerkUser?.primaryEmailAddress?.emailAddress ??
+      clerkUser?.emailAddresses?.[0]?.emailAddress ??
+      '';
+    const dbTier = (user.tier as Tier) ?? 'free';
+    const tier = resolveEffectiveTier(dbTier, primaryEmail);
     if (!canExport(tier, format)) {
       return NextResponse.json(
         { error: `Export ${format} not allowed for your plan` },
