@@ -21,7 +21,7 @@
 
 <br/>
 
-[Overview](#overview) · [Capabilities](#capabilities) · [Quick start](#quick-start) · [Configuration](#configuration) · [Operations](#operations) · [Security](#security) · [License](#license)
+[Overview](#overview) · [Capabilities](#capabilities) · [Quick start](#quick-start) · [Configuration](#configuration) · [Security](#security) · [License](#license)
 
 </div>
 
@@ -82,27 +82,6 @@ Copy **`.env.example`** to **`.env.local`**. Typical groups:
 | **App** | `NEXT_PUBLIC_APP_URL` — canonical public URL **without** trailing slash (Open Graph, metadata, absolute links). |
 | **Ops** | `FREE_ACCOUNTS_PER_IP_LIMIT` (Free tier), optional `WHITELISTED_EMAILS` (comma/semicolon/newline) for operator-granted Pro-equivalent access without Stripe. |
 | **Email** | Optional Resend (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`) for feedback notifications. |
-
-### Resend: “Domain not verified” (403)
-
-If outbound mail fails with **403** and a message about verifying your domain:
-
-1. In [Resend](https://resend.com) → **Domains**, add your domain, add the DNS records (SPF/DKIM), wait until **Verified**.
-2. Until then, use a Resend-approved sender (e.g. `Press Review Tool <onboarding@resend.dev>`) as in `.env.example`.
-3. After verification, switch `RESEND_FROM_EMAIL` to your branded address.
-
-### Social previews (Open Graph / Twitter)
-
-- Set **`NEXT_PUBLIC_APP_URL`** in production to your real hostname (e.g. `https://press-review-tool.labeltools.toskyrecords.com`). Without it, `metadataBase` and social images may point at the wrong host.
-- The app exposes generated OG/Twitter images and meta tags from the root layout. Validate using your **public home URL**; protected routes may redirect or show different titles and are poor candidates for preview checks.
-
----
-
-## Operations
-
-- **Perplexity** powers live search; keep `PERPLEXITY_API_KEY` valid in every environment.
-- **Anthropic** billing is separate from end-user Stripe plans: fund API usage in the [Anthropic Console](https://console.anthropic.com/). If the key fails, categorization falls back to heuristics so searches still complete.
-- After rotating API keys in provider dashboards, **update env vars** on Vercel (or your host) and **redeploy** so runtime picks up changes.
 
 ---
 
