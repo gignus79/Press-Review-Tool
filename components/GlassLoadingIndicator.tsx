@@ -21,6 +21,9 @@ export type GlassLoadingIndicatorProps = {
   className?: string;
   /** ms tra un messaggio e l’altro */
   rotateIntervalMs?: number;
+  /** Annulla operazione in corso (es. fetch ricerca) */
+  onCancel?: () => void;
+  cancelLabel?: string;
 };
 
 function useRotatingMessage(messages: string[], intervalMs: number) {
@@ -52,6 +55,8 @@ export function GlassLoadingIndicator({
   size = 'md',
   className,
   rotateIntervalMs = 2800,
+  onCancel,
+  cancelLabel,
 }: GlassLoadingIndicatorProps) {
   const { box, spinner } = SIZE_MAP[size];
   const list = messages?.length ? messages : message ? [message] : [];
@@ -110,6 +115,20 @@ export function GlassLoadingIndicator({
             {rotating}
           </p>
         </div>
+      ) : null}
+
+      {onCancel && cancelLabel ? (
+        <button
+          type="button"
+          onClick={onCancel}
+          className={clsx(
+            'mt-1 w-full max-w-[min(100%,280px)] rounded-[99px] border border-neutral-300/80 px-4 py-2.5',
+            'text-sm font-semibold text-neutral-800 transition-colors',
+            'hover:bg-neutral-100 dark:border-white/20 dark:text-zinc-100 dark:hover:bg-white/10'
+          )}
+        >
+          {cancelLabel}
+        </button>
       ) : null}
     </div>
   );

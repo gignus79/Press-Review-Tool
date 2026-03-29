@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { ensureSchema, sql } from '@/lib/db';
+import { sendFeedbackEmailToDeveloper } from '@/lib/feedback-email';
 import { getClientIp, hashIp } from '@/lib/ip-guard';
 
 export async function POST(req: Request) {
@@ -25,6 +26,12 @@ export async function POST(req: Request) {
       INSERT INTO feedback (clerk_user_id, page_path, message, ip_hash)
       VALUES (${userId}, ${page || '/'}, ${message.slice(0, 2000)}, ${ipHash})
     `;
+
+    await sendFeedbackEmailToDeveloper({
+      message: message.slice(0, 2000),
+      page: page || '/',
+      clerkUserId: userId,
+    }).catch((e) => console.warn('[feedback] email notify failed', e));
 
     return NextResponse.json({ ok: true }, { headers: { 'Cache-Control': 'no-store' } });
   } catch (e) {

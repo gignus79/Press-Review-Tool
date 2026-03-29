@@ -1,4 +1,9 @@
-import { expandArtistVariants, normalizeWhitespace } from '@/lib/artist-variants';
+import {
+  expandAlbumTitleVariants,
+  expandArtistVariants,
+  expandPressSearchArtists,
+  normalizeWhitespace,
+} from '@/lib/artist-variants';
 import {
   capResultList,
   clampRawSearchHit,
@@ -24,14 +29,14 @@ export interface PerplexitySearchResponse {
   id?: string;
 }
 
-/** Una sola ondata da 5 query (Hobby 60s). */
-const MAX_QUERIES_PER_WAVE = 5;
+/** Ondata Perplexity: più query quando c’è album (rassegna sul titolo). */
+const MAX_QUERIES_PER_WAVE = 8;
 const PERPLEXITY_CONCURRENCY = 5;
 
 async function fetchPerplexityForQuery(
   query: string,
   apiKey: string,
-  options: { maxResults: number; language?: string }
+  options: { maxResults: number; language?: string; signal?: AbortSignal }
 ): Promise<PerplexitySearchResult[]> {
   const body: Record<string, unknown> = {
     query,
@@ -52,6 +57,7 @@ async function fetchPerplexityForQuery(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify(body),
+    signal: options.signal,
   });
 
   if (!response.ok) {
@@ -69,6 +75,7 @@ export async function perplexitySearch(
   options: {
     maxResults?: number;
     language?: string;
+    signal?: AbortSignal;
   } = {}
 ): Promise<PerplexitySearchResult[]> {
   const apiKey = process.env.PERPLEXITY_API_KEY;
@@ -78,14 +85,22 @@ export async function perplexitySearch(
 
   const maxResults = options.maxResults ?? 12;
   const language = options.language;
+  const signal = options.signal;
   const queue = queries.slice(0, MAX_QUERIES_PER_WAVE);
   const allResults: PerplexitySearchResult[] = [];
   const seenUrls = new Set<string>();
 
   for (let i = 0; i < queue.length; i += PERPLEXITY_CONCURRENCY) {
+    if (signal?.aborted) {
+      const err = new Error('Search aborted');
+      err.name = 'AbortError';
+      throw err;
+    }
     const chunk = queue.slice(i, i + PERPLEXITY_CONCURRENCY);
     const lists = await Promise.all(
-      chunk.map((q) => fetchPerplexityForQuery(q, apiKey, { maxResults, language }))
+      chunk.map((q) =>
+        fetchPerplexityForQuery(q, apiKey, { maxResults, language, signal })
+      )
     );
     for (const list of lists) {
       for (const r of list) {
@@ -103,18 +118,32 @@ export async function perplexitySearch(
   return capResultList(allResults, MAX_RESULTS_IN_PIPELINE);
 }
 
-const MAX_PRIMARY_QUERIES = 5;
+/** Con album/EP/single: più combinazioni (priorità rassegna su quel titolo). */
+const MAX_PRIMARY_WITH_ALBUM = 14;
+const MAX_PRIMARY_ARTIST_ONLY = 6;
 
-function pushArtistAlbumQueries(queries: string[], artist: string, album: string) {
+/**
+ * Query orientate alla copertura stampa dell’album indicato (recensioni, interviste, articoli).
+ */
+function pushArtistAlbumPressQueries(queries: string[], artist: string, album: string) {
   const a = sanitizePhraseForQuery(artist);
   const b = sanitizePhraseForQuery(album);
-  queries.push(
+  if (!a || !b) return;
+  const seq = [
     `"${a}" "${b}" review`,
-    `${a} ${b} music`,
-    `${a} ${b} interview`,
-    `${a} ${b} recensione`,
-    `${a} ${b} press`
-  );
+    `"${a}" "${b}" album`,
+    `"${b}" "${a}" review`,
+    `${a} "${b}" album review`,
+    `${a} "${b}" press`,
+    `${a} "${b}" interview`,
+    `${a} ${b} music magazine`,
+    `${a} ${b} recensione album`,
+    `${a} ${b} music critic`,
+    `"${b}" ${a} album`,
+    `${b} by ${a} review`,
+    `${a} ${b} release coverage`,
+  ];
+  for (const q of seq) queries.push(q);
 }
 
 function pushArtistOnlyQueries(queries: string[], artist: string) {
@@ -124,7 +153,20 @@ function pushArtistOnlyQueries(queries: string[], artist: string) {
     `${a} band news`,
     `${a} interview`,
     `${a} latest album`,
-    `${a} musician press`
+    `${a} musician press`,
+    `${a} press coverage`
+  );
+}
+
+function pushAlbumOnlyPressQueries(queries: string[], album: string) {
+  const b = sanitizePhraseForQuery(album);
+  queries.push(
+    `"${b}" album review`,
+    `"${b}" music album`,
+    `${b} album press`,
+    `${b} release review`,
+    `${b} recensione album`,
+    `${b} music press`
   );
 }
 
@@ -133,21 +175,26 @@ export function buildSearchQueries(artist: string, album: string): string[] {
   const albumNorm = sanitizePhraseForQuery(normalizeWhitespace(album));
 
   if (artist.trim()) {
-    const variants = expandArtistVariants(artist);
-    for (const a of variants) {
-      if (albumNorm) {
-        pushArtistAlbumQueries(queries, a, albumNorm);
-      } else {
+    if (albumNorm) {
+      const artists = expandPressSearchArtists(artist).slice(0, 3);
+      const albums = expandAlbumTitleVariants(albumNorm).slice(0, 2);
+      for (const a of artists) {
+        for (const b of albums) {
+          pushArtistAlbumPressQueries(queries, a, b);
+        }
+      }
+    } else {
+      const variants = expandArtistVariants(artist).slice(0, 2);
+      for (const a of variants) {
         pushArtistOnlyQueries(queries, a);
       }
     }
   } else if (albumNorm) {
-    queries.push(
-      `"${albumNorm}" album review`,
-      `${albumNorm} music album`,
-      `${albumNorm} recensione`
-    );
+    for (const b of expandAlbumTitleVariants(albumNorm).slice(0, 2)) {
+      pushAlbumOnlyPressQueries(queries, b);
+    }
   }
 
-  return [...new Set(queries.filter(Boolean))].slice(0, MAX_PRIMARY_QUERIES);
+  const cap = albumNorm ? MAX_PRIMARY_WITH_ALBUM : MAX_PRIMARY_ARTIST_ONLY;
+  return [...new Set(queries.filter(Boolean))].slice(0, cap);
 }

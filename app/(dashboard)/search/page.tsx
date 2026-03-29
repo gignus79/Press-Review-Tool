@@ -41,6 +41,8 @@ function SearchPageInner() {
     title: string;
     body: string;
   }>(null);
+  const [resultsNotice, setResultsNotice] = useState<null | { count: number }>(null);
+  const searchAbortRef = useRef<AbortController | null>(null);
   const prevExportId = useRef<string>(exportIdParam);
 
   useEffect(() => {
@@ -105,17 +107,25 @@ function SearchPageInner() {
         initialArtist={initialArtist}
         initialAlbum={initialAlbum}
         onSearch={async (params) => {
+          searchAbortRef.current?.abort();
+          const ac = new AbortController();
+          searchAbortRef.current = ac;
           setLoading(true);
+          setResultsNotice(null);
           try {
             const res = await fetch('/api/search', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               credentials: 'include',
               body: JSON.stringify(params),
+              signal: ac.signal,
             });
             const parsed = await parseJsonFromResponse(res);
             if (!parsed.ok) {
               const st = res.status;
+              if (st === 204) {
+                return;
+              }
               const likelyTimeout =
                 st === 504 || st === 502 || st === 503 || st === 524;
               alert(likelyTimeout ? t.search.timeoutOrGateway : t.search.unexpectedResponse);
@@ -150,16 +160,24 @@ function SearchPageInner() {
               alert(t.search.unexpectedResponse);
               return;
             }
+            const list = Array.isArray(data.results) ? data.results : [];
             setResults({
               query: data.query ?? {},
-              results: Array.isArray(data.results) ? data.results : [],
+              results: list,
               exportId: data.exportId,
               remainingSearches: data.remainingSearches,
             });
+            setResultsNotice({ count: list.length });
           } catch (err) {
+            if (err instanceof Error && err.name === 'AbortError') {
+              return;
+            }
             const message = err instanceof Error ? err.message : 'Search failed';
             alert(message);
           } finally {
+            if (searchAbortRef.current === ac) {
+              searchAbortRef.current = null;
+            }
             setLoading(false);
           }
         }}
@@ -179,6 +197,12 @@ function SearchPageInner() {
                 : [...t.search.loadingSteps]
             }
             rotateIntervalMs={2600}
+            onCancel={
+              loading && !hydratingExport
+                ? () => searchAbortRef.current?.abort()
+                : undefined
+            }
+            cancelLabel={t.search.cancelSearch}
           />
         </div>
       )}
@@ -203,6 +227,41 @@ function SearchPageInner() {
                 className="inline-flex items-center justify-center rounded-[99px] border border-[var(--tosky-border)] px-4 py-2 text-sm font-semibold text-[var(--tosky-dark)] hover:bg-[var(--tosky-light-gray)]"
               >
                 {t.search.popupClose}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {resultsNotice && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/45 p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="search-results-notice-title"
+        >
+          <div className="w-full max-w-md rounded-2xl border border-[var(--tosky-card-border)] bg-[var(--tosky-card)] p-5 shadow-2xl">
+            <h2
+              id="search-results-notice-title"
+              className="text-lg font-bold text-[var(--tosky-dark)]"
+            >
+              {t.search.resultsNoticeTitle}
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-[var(--tosky-text-gray)]">
+              {resultsNotice.count === 0
+                ? t.search.resultsNoticeZero
+                : t.search.resultsNoticeCount.replace(
+                    '{count}',
+                    String(resultsNotice.count)
+                  )}
+            </p>
+            <div className="mt-5 flex justify-end">
+              <button
+                type="button"
+                onClick={() => setResultsNotice(null)}
+                className="inline-flex items-center justify-center rounded-[99px] bg-[var(--tosky-dark)] px-5 py-2 text-sm font-semibold text-white hover:opacity-90 dark:text-[var(--tosky-white)]"
+              >
+                {t.search.resultsNoticeOk}
               </button>
             </div>
           </div>

@@ -90,7 +90,8 @@ async function categorizeBatchWithAnthropic(
   anthropic: Anthropic,
   systemPrompt: string,
   keywords: string[],
-  batch: RawRow[]
+  batch: RawRow[],
+  signal?: AbortSignal
 ): Promise<CategorizedResult[]> {
   if (batch.length === 0) return [];
 
@@ -102,17 +103,20 @@ async function categorizeBatchWithAnthropic(
   }));
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: batch.length >= 20 ? 4500 : 2800,
-      system: systemPrompt,
-      messages: [
-        {
-          role: 'user',
-          content: `Keywords: ${keywords.join(', ')}\n\nResults:\n${JSON.stringify(context)}`,
-        },
-      ],
-    });
+    const response = await anthropic.messages.create(
+      {
+        model: 'claude-sonnet-4-20250514',
+        max_tokens: batch.length >= 20 ? 4500 : 2800,
+        system: systemPrompt,
+        messages: [
+          {
+            role: 'user',
+            content: `Keywords: ${keywords.join(', ')}\n\nResults:\n${JSON.stringify(context)}`,
+          },
+        ],
+      },
+      { signal }
+    );
 
     const text = response.content[0].type === 'text' ? response.content[0].text : '';
     const start = text.indexOf('[');
@@ -136,6 +140,9 @@ async function categorizeBatchWithAnthropic(
     }
     return fallbackFromBatch(batch);
   } catch (err) {
+    if (err instanceof Error && err.name === 'AbortError') {
+      throw err;
+    }
     const hint =
       err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
     console.error('[categorize] Anthropic request failed, using heuristic fallback:', hint);
@@ -145,8 +152,10 @@ async function categorizeBatchWithAnthropic(
 
 export async function categorizeResults(
   results: Array<{ title: string; url: string; snippet: string; date?: string }>,
-  keywords: string[]
+  keywords: string[],
+  options?: { signal?: AbortSignal }
 ): Promise<CategorizedResult[]> {
+  const signal = options?.signal;
   const capped = results.slice(0, MAX_RESULTS_IN_PIPELINE);
 
   const apiKey = process.env.ANTHROPIC_API_KEY;
@@ -177,6 +186,12 @@ Return ONE JSON array with EXACTLY one object per input result, same order. No e
   const ANTHROPIC_HEAD = 24;
   const head = capped.slice(0, ANTHROPIC_HEAD);
   const tail = capped.slice(ANTHROPIC_HEAD);
-  const aiRows = await categorizeBatchWithAnthropic(anthropic, systemPrompt, keywords, head);
+  const aiRows = await categorizeBatchWithAnthropic(
+    anthropic,
+    systemPrompt,
+    keywords,
+    head,
+    signal
+  );
   return [...aiRows, ...fallbackFromBatch(tail)];
 }

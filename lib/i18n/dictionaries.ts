@@ -159,6 +159,12 @@ export const dictionaries = {
         'Rilevati troppi account Free da questo IP nel mese corrente. Per continuare, passa a Pro oppure usa un account già attivo.',
       popupUpgrade: 'Passa a Pro',
       popupClose: 'Chiudi',
+      cancelSearch: 'Annulla ricerca',
+      resultsNoticeTitle: 'Ricerca completata',
+      resultsNoticeCount: 'Trovati {count} risultati.',
+      resultsNoticeZero:
+        'Nessun risultato con i filtri attuali. Prova periodo più ampio, profondità maggiore o lingua multilingue.',
+      resultsNoticeOk: 'OK',
       unexpectedResponse:
         'Il server ha risposto in modo imprevisto (spesso pagina HTML invece di dati). Può dipendere da sessione scaduta, timeout o manutenzione. Aggiorna la pagina, effettua di nuovo l’accesso e riprova.',
       timeoutOrGateway:
@@ -368,6 +374,12 @@ export const dictionaries = {
         'Too many Free accounts detected from this IP this month. Upgrade to Pro or use an already active account.',
       popupUpgrade: 'Upgrade to Pro',
       popupClose: 'Close',
+      cancelSearch: 'Cancel search',
+      resultsNoticeTitle: 'Search finished',
+      resultsNoticeCount: 'Found {count} results.',
+      resultsNoticeZero:
+        'No results with the current filters. Try a wider period, deeper search, or multilingual mode.',
+      resultsNoticeOk: 'OK',
       unexpectedResponse:
         'The server returned an unexpected response (often an HTML error page instead of data). This may mean your session expired, the request timed out, or the service is busy. Refresh the page, sign in again, and retry.',
       timeoutOrGateway:
@@ -577,6 +589,12 @@ export const dictionaries = {
         'Demasiadas cuentas Free detectadas desde esta IP este mes. Pasa a Pro o usa una cuenta ya activa.',
       popupUpgrade: 'Pasar a Pro',
       popupClose: 'Cerrar',
+      cancelSearch: 'Cancelar búsqueda',
+      resultsNoticeTitle: 'Búsqueda finalizada',
+      resultsNoticeCount: 'Se encontraron {count} resultados.',
+      resultsNoticeZero:
+        'Sin resultados con los filtros actuales. Amplía fechas, sube la profundidad o usa multilingüe.',
+      resultsNoticeOk: 'OK',
       unexpectedResponse:
         'El servidor devolvió una respuesta inesperada (a menudo HTML en lugar de datos). Puede deberse a sesión caducada, tiempo de espera o mantenimiento. Actualiza la página, vuelve a iniciar sesión e inténtalo de nuevo.',
       timeoutOrGateway:
@@ -786,6 +804,12 @@ export const dictionaries = {
         'Trop de comptes Free détectés depuis cette IP ce mois-ci. Passez en Pro ou utilisez un compte déjà actif.',
       popupUpgrade: 'Passer en Pro',
       popupClose: 'Fermer',
+      cancelSearch: 'Annuler la recherche',
+      resultsNoticeTitle: 'Recherche terminée',
+      resultsNoticeCount: '{count} résultats trouvés.',
+      resultsNoticeZero:
+        'Aucun résultat avec les filtres actuels. Élargissez la période, augmentez la profondeur ou passez en multilingue.',
+      resultsNoticeOk: 'OK',
       unexpectedResponse:
         'Le serveur a renvoyé une réponse inattendue (souvent une page HTML au lieu de données). Cela peut indiquer une session expirée, un délai dépassé ou une maintenance. Actualisez la page, reconnectez-vous et réessayez.',
       timeoutOrGateway:

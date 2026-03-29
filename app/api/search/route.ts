@@ -22,7 +22,16 @@ export const maxDuration = 60;
 
 const ALLOWED_SEARCH_LANG = new Set(['en', 'it', 'es', 'fr', 'multi']);
 
+function isAbortLike(e: unknown): boolean {
+  return e instanceof Error && e.name === 'AbortError';
+}
+
+function abortedSearchResponse() {
+  return new NextResponse(null, { status: 204 });
+}
+
 export async function POST(req: Request) {
+  const signal = req.signal;
   try {
     await ensureSchema();
     const { userId } = await auth();
@@ -179,11 +188,20 @@ export async function POST(req: Request) {
       {
         maxResults: Math.min(max_results, 100),
         language: language === 'multi' ? undefined : language,
+        signal,
       }
     );
 
+    if (signal.aborted) {
+      return abortedSearchResponse();
+    }
+
     const keywords = [artist, album].filter(Boolean);
-    const categorized = await categorizeResults(rawResults, keywords);
+    const categorized = await categorizeResults(rawResults, keywords, { signal });
+
+    if (signal.aborted) {
+      return abortedSearchResponse();
+    }
 
     let filtered = categorized;
     if (content_filter !== 'All') {
@@ -202,6 +220,10 @@ export async function POST(req: Request) {
       filtered = filtered.filter((r) =>
         resultInDateRange(r.date, dateFrom, dateTo, { includeUnknown: true })
       );
+    }
+
+    if (signal.aborted) {
+      return abortedSearchResponse();
     }
 
     const exportId = randomUUID();
@@ -237,6 +259,9 @@ export async function POST(req: Request) {
       remainingSearches: remaining,
     });
   } catch (e) {
+    if (isAbortLike(e) || signal.aborted) {
+      return abortedSearchResponse();
+    }
     console.error('Search error:', e);
     return NextResponse.json(
       { error: e instanceof Error ? e.message : 'Search failed' },

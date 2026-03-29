@@ -1,4 +1,8 @@
-import { expandArtistVariants } from '@/lib/artist-variants';
+import {
+  expandAlbumTitleVariants,
+  expandArtistVariants,
+  expandPressSearchArtists,
+} from '@/lib/artist-variants';
 import {
   perplexitySearch,
   PERPLEXITY_MAX_RESULTS_PER_QUERY,
@@ -7,8 +11,8 @@ import {
 import { capResultList, MAX_RESULTS_IN_PIPELINE } from '@/lib/result-size-limits';
 import { sanitizePhraseForQuery } from '@/lib/search-input';
 
-/** Abbastanza risultati dalla prima ondata → niente seconda ondata Perplexity. */
-const MIN_RESULTS_BEFORE_FALLBACK = 6;
+const MIN_RESULTS_BEFORE_FALLBACK_DEFAULT = 6;
+const MIN_RESULTS_BEFORE_FALLBACK_WITH_ALBUM = 4;
 
 function mergeDedupe(
   primary: PerplexitySearchResult[],
@@ -32,7 +36,20 @@ export function buildFallbackSearchQueries(artist: string, album: string): strin
   const out: string[] = [];
 
   if (a && b) {
-    out.push(`${a} ${b} music`, `${a} ${b} release`, `${a} ${b} news`, `${b} by ${a}`);
+    const artists = expandPressSearchArtists(artist.trim()).slice(0, 2);
+    const albums = expandAlbumTitleVariants(album.trim()).slice(0, 2);
+    for (const av of artists) {
+      for (const bv of albums) {
+        out.push(
+          `"${bv}" "${av}"`,
+          `review "${bv}" ${av}`,
+          `${av} ${bv} streaming interview`,
+          `recensione "${bv}" ${av}`,
+          `${bv} album ${av} news`
+        );
+      }
+    }
+    out.push(`${a} ${b} music`, `${a} ${b} release`, `${b} by ${a}`);
   }
   if (a) {
     for (const variant of expandArtistVariants(a)) {
@@ -50,10 +67,10 @@ export function buildFallbackSearchQueries(artist: string, album: string): strin
     }
   }
   if (b && !a) {
-    out.push(`${b} album music`, `${b} record review`, `${b} album release`);
+    out.push(`${b} album music`, `${b} record review`, `${b} album release`, `"${b}" press`);
   }
 
-  return [...new Set(out)].slice(0, 3);
+  return [...new Set(out)].slice(0, 5);
 }
 
 /**
@@ -63,19 +80,24 @@ export async function runPerplexityWithFallback(
   primaryQueries: string[],
   artist: string,
   album: string,
-  options: { maxResults: number; language?: string }
+  options: { maxResults: number; language?: string; signal?: AbortSignal }
 ): Promise<PerplexitySearchResult[]> {
-  const { maxResults, language } = options;
+  const { maxResults, language, signal } = options;
+  const albumProvided = Boolean(album.trim());
+  const minBeforeFallback = albumProvided
+    ? MIN_RESULTS_BEFORE_FALLBACK_WITH_ALBUM
+    : MIN_RESULTS_BEFORE_FALLBACK_DEFAULT;
 
   let raw = capResultList(
     await perplexitySearch(primaryQueries, {
       maxResults: Math.min(maxResults, PERPLEXITY_MAX_RESULTS_PER_QUERY),
       language,
+      signal,
     }),
     MAX_RESULTS_IN_PIPELINE
   );
 
-  if (raw.length >= MIN_RESULTS_BEFORE_FALLBACK) {
+  if (raw.length >= minBeforeFallback) {
     return raw;
   }
 
@@ -86,6 +108,7 @@ export async function runPerplexityWithFallback(
     const extra = await perplexitySearch(fallbackQs, {
       maxResults: Math.min(maxResults, PERPLEXITY_MAX_RESULTS_PER_QUERY),
       language: undefined,
+      signal,
     });
     raw = capResultList(mergeDedupe(raw, extra), MAX_RESULTS_IN_PIPELINE);
   }
