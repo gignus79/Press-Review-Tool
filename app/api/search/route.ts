@@ -57,7 +57,7 @@ export async function POST(req: Request) {
     const language =
       typeof body.language === 'string' && ALLOWED_SEARCH_LANG.has(body.language)
         ? body.language
-        : 'en';
+        : 'multi';
     const max_results = coerceMaxResults(body.max_results);
     const content_filter = coerceContentFilter(body.content_filter);
 

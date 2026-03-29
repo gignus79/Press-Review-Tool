@@ -29,7 +29,7 @@ export function SearchForm({
   const { t } = useI18n();
   const [artist, setArtist] = useState(initialArtist);
   const [album, setAlbum] = useState(initialAlbum);
-  const [language, setLanguage] = useState('en');
+  const [language, setLanguage] = useState('multi');
   const [depth, setDepth] = useState(12);
   const [filter, setFilter] = useState('All');
   const [period, setPeriod] = useState<PeriodPreset>('any');

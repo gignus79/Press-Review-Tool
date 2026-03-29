@@ -21,23 +21,32 @@
 
 <br/>
 
-[Features](#features) · [Quick start](#quick-start) · [Environment](#environment) · [Operations](#operations-and-ai-keys) · [Security](#security)
+[Overview](#overview) · [Capabilities](#capabilities) · [Quick start](#quick-start) · [Configuration](#configuration) · [Operations](#operations) · [Security](#security) · [License](#license)
 
 </div>
 
 ---
 
-## Features
+## Overview
 
-| Area | Details |
-|------|---------|
-| **Search** | Perplexity-backed retrieval with fallbacks; **post-ranking** by match to artist/album (tokens + phrase overlap, light URL cleanup) — no fake “relevance” labels. |
-| **Classification** | Optional Anthropic Claude enrichment; automatic heuristic fallback if the API is unavailable. |
-| **Exports** | PDF, Excel, CSV, JSON from saved searches. |
-| **Auth & billing** | Clerk authentication; Stripe subscriptions (Pro / Business) with plan sync. |
-| **Fair use** | Monthly search limits by tier; Free-tier guardrails by identity (normalized email) and IP. |
+**Press Review Tool** is a web application for **music industry teams** who need curated press coverage: reviews, interviews, news, and more—aggregated from the open web, ranked for relevance to an artist or release, and exported for decks and archives.
 
-Architecture: **Next.js App Router** (server routes + Neon Postgres), **Clerk** middleware on protected routes, **Stripe** webhooks for subscription state.
+It is part of the **LabelTools** suite and ships as a subscription product (**Free**, **Pro**, **Business**) with usage limits and feature tiers enforced server-side.
+
+---
+
+## Capabilities
+
+| Area | What you get |
+|------|----------------|
+| **Search** | Live retrieval via Perplexity with fallbacks; post-ranking aligned to artist/album (token and phrase signals, URL-aware cleanup)—transparent scoring, not vanity “relevance” badges. |
+| **Languages** | Result language presets include English, Italian, Spanish, French, and **Multilingual** (default)—use multilingual when you need global coverage without excluding non-English sources. |
+| **Classification** | Optional **Anthropic Claude** enrichment for content types; heuristic fallback if the API is unavailable or out of credits. |
+| **Exports** | **PDF**, **Excel**, **CSV**, **JSON** from saved searches; email delivery for PDF where configured. |
+| **Access & billing** | **Clerk** authentication; **Stripe** subscriptions with webhook-driven plan sync. |
+| **Fair use** | Monthly search quotas by tier; Free-tier safeguards using normalized identity and IP-based guardrails. |
+
+**Stack (high level):** [Next.js](https://nextjs.org/) App Router (React 19, TypeScript), server routes, [Neon](https://neon.tech/) Postgres, hosted on [Vercel](https://vercel.com/).
 
 ---
 
@@ -45,68 +54,74 @@ Architecture: **Next.js App Router** (server routes + Neon Postgres), **Clerk** 
 
 ```bash
 npm install
-cp .env.example .env.local   # then fill values
+cp .env.example .env.local   # fill in secrets (see below)
 npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
 
 ```bash
-npm run lint    # ESLint
-npm run build   # production build
+npm run lint       # ESLint
+npm run typecheck  # TypeScript
+npm run build      # production build
 ```
 
 ---
 
-## Environment
+## Configuration
 
-Copy **`.env.example`** → **`.env.local`**. Minimum categories:
+Copy **`.env.example`** to **`.env.local`**. Typical groups:
 
-| Group | Purpose |
-|--------|---------|
-| **Clerk** | Publishable + secret keys, URLs, webhook secret for user sync. |
-| **Neon** | `DATABASE_URL` (serverless Postgres). |
-| **Perplexity** | `PERPLEXITY_API_KEY` — primary search backend. |
-| **Anthropic** | `ANTHROPIC_API_KEY` — optional categorization (see below). |
-| **Stripe** | Secret, webhook secret, price IDs, publishable key. |
-| **App** | `NEXT_PUBLIC_APP_URL` (URL canonico del sito, **senza** slash finale — usato per Open Graph / Twitter e link assoluti), optional `FREE_ACCOUNTS_PER_IP_LIMIT`. |
-| **Email (feedback)** | Optional `RESEND_API_KEY` + `RESEND_FROM_EMAIL` — copia notifiche a developer@toskyrecords.com (vedi `.env.example`). |
+| Group | Role |
+|--------|------|
+| **Clerk** | Publishable and secret keys, sign-in URLs, webhook secret for user lifecycle. |
+| **Database** | `DATABASE_URL` for Neon (serverless Postgres). |
+| **Search** | `PERPLEXITY_API_KEY` — primary search backend. |
+| **AI (optional)** | `ANTHROPIC_API_KEY` — categorization; app degrades gracefully without it. |
+| **Billing** | Stripe secret, webhook secret, price IDs, publishable key. |
+| **App** | `NEXT_PUBLIC_APP_URL` — canonical public URL **without** trailing slash (Open Graph, metadata, absolute links). |
+| **Ops** | `FREE_ACCOUNTS_PER_IP_LIMIT` (Free tier), optional `WHITELISTED_EMAILS` (comma/semicolon/newline) for operator-granted Pro-equivalent access without Stripe. |
+| **Email** | Optional Resend (`RESEND_API_KEY`, `RESEND_FROM_EMAIL`) for feedback notifications. |
 
-### Resend (403 “Domain not verified”)
+### Resend: “Domain not verified” (403)
 
-Se le email falliscono con **403** e messaggio tipo *Verify toskyrecords.com or update your from domain*:
+If outbound mail fails with **403** and a message about verifying your domain:
 
-1. In **[Resend](https://resend.com)** → **Domains** aggiungi `toskyrecords.com`, inserisci i record **DNS** (SPF/DKIM) che Resend mostra e attendi lo stato **Verified**.
-2. Fino ad allora imposta `RESEND_FROM_EMAIL` a un mittente già consentito da Resend, ad es. `Press Review Tool <onboarding@resend.dev>` (vedi `.env.example`).
-3. Solo dopo la verifica del dominio potrai usare `customercare@toskyrecords.com` o altro indirizzo sul tuo dominio.
+1. In [Resend](https://resend.com) → **Domains**, add your domain, add the DNS records (SPF/DKIM), wait until **Verified**.
+2. Until then, use a Resend-approved sender (e.g. `Press Review Tool <onboarding@resend.dev>`) as in `.env.example`.
+3. After verification, switch `RESEND_FROM_EMAIL` to your branded address.
 
-### Social previews (Open Graph / Twitter / Vercel checks)
+### Social previews (Open Graph / Twitter)
 
-- Imposta **`NEXT_PUBLIC_APP_URL`** in produzione al dominio pubblico reale (es. `https://press-review-tool.labeltools.toskyrecords.com`). Senza questo valore, `metadataBase` e gli URL di `og:image` / `twitter:image` possono puntare al dominio `.vercel.app` o risultare errati nei tool di anteprima.
-- Il progetto espone immagini generate (`/opengraph-image`, `/twitter-image`) e meta tag `twitter:card=summary_large_image`, `og:image`, ecc. nel layout root (`app/layout.tsx`).
-- Per validare: Vercel **Deployment → Checks** oppure condividi l’URL della **home** `/` (route pubblica). Route protette (es. `/dashboard` senza sessione) possono mostrare titoli diversi o redirect: non usarle come URL di test per OG.
+- Set **`NEXT_PUBLIC_APP_URL`** in production to your real hostname (e.g. `https://press-review-tool.labeltools.toskyrecords.com`). Without it, `metadataBase` and social images may point at the wrong host.
+- The app exposes generated OG/Twitter images and meta tags from the root layout. Validate using your **public home URL**; protected routes may redirect or show different titles and are poor candidates for preview checks.
 
 ---
 
-## Operations and AI keys
+## Operations
 
-- **Perplexity** powers live search; keep `PERPLEXITY_API_KEY` valid in production.
-- **Anthropic (Claude)** is used for richer categorization. Billing is **separate** from end-user Pro/Business plans:
-  - Top up credits in the **[Anthropic Console](https://console.anthropic.com/)** (API), not only the consumer chat product.
-  - If the key is disabled, rotated, or out of credits, the app **falls back** to heuristic labels so searches still complete.
-- After rotating or re-enabling an API key in the provider dashboard, **redeploy** or update the env var on Vercel so runtime picks up the change.
+- **Perplexity** powers live search; keep `PERPLEXITY_API_KEY` valid in every environment.
+- **Anthropic** billing is separate from end-user Stripe plans: fund API usage in the [Anthropic Console](https://console.anthropic.com/). If the key fails, categorization falls back to heuristics so searches still complete.
+- After rotating API keys in provider dashboards, **update env vars** on Vercel (or your host) and **redeploy** so runtime picks up changes.
 
 ---
 
 ## Security
 
-See **[SECURITY.md](./SECURITY.md)** for dependency review, operational checklist, and reporting. Manual smoke tests: **[docs/VERIFICATION.md](./docs/VERIFICATION.md)**.
+See **[SECURITY.md](./SECURITY.md)** for dependency review, operational checklist, and how to report issues. Optional smoke checklist: **[docs/VERIFICATION.md](./docs/VERIFICATION.md)**.
+
+---
+
+## License
+
+This repository is **proprietary**. See **[LICENSE](./LICENSE)** for terms. Access to hosted software is governed by your LabelTools subscription or agreement.
 
 ---
 
 <div align="center">
 
-**Press Review Tool** by **MediaMatter** (creative training & consulting) — contact: **developer@toskyrecords.com**
+**Press Review Tool** · **MediaMatter** (creative training & consulting)  
+Contact: **developer@toskyrecords.com**
 
 <br/>
 
