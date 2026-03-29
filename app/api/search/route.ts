@@ -17,8 +17,8 @@ import {
 import { randomUUID } from 'crypto';
 
 export const runtime = 'nodejs';
-/** Vercel Pro: fino a 300s. Piano Hobby: massimo 60s (valore effettivo viene limitato dalla piattaforma). */
-export const maxDuration = 300;
+/** Vercel Hobby: limite effettivo 60s. La pipeline è tarata per restare sotto questo tetto. */
+export const maxDuration = 60;
 
 const ALLOWED_SEARCH_LANG = new Set(['en', 'it', 'es', 'fr', 'multi']);
 

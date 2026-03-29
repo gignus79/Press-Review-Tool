@@ -5,8 +5,8 @@
 export const MAX_RESULT_TITLE_LEN = 500;
 export const MAX_RESULT_URL_LEN = 2048;
 export const MAX_RESULT_SNIPPET_LEN = 3500;
-/** Massimo risultati grezzi dopo merge (prima di categorize / DB). */
-export const MAX_RESULTS_IN_PIPELINE = 100;
+/** Massimo risultati grezzi dopo merge (prima di categorize / DB). Ridotto per Hobby ~60s. */
+export const MAX_RESULTS_IN_PIPELINE = 72;
 /** Anthropic: non accettare array modello molto più grande del batch. */
 export const MAX_MODEL_ITEMS_PER_BATCH_FACTOR = 2;
 

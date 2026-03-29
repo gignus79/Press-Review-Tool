@@ -21,9 +21,10 @@ export interface PerplexitySearchResponse {
   id?: string;
 }
 
-const MAX_QUERIES_PER_WAVE = 10;
-/** Chiamate Perplexity in parallelo per ridurre il tempo totale (evita timeout Vercel). */
-const PERPLEXITY_CONCURRENCY = 4;
+/** Allineato a MAX_PRIMARY_QUERIES: meno round HTTP sotto il tetto Hobby 60s. */
+const MAX_QUERIES_PER_WAVE = 7;
+/** Parallelo aggressivo ma limitato per non saturare Perplexity. */
+const PERPLEXITY_CONCURRENCY = 5;
 
 async function fetchPerplexityForQuery(
   query: string,
@@ -97,7 +98,8 @@ export async function perplexitySearch(
   return capResultList(allResults, MAX_RESULTS_IN_PIPELINE);
 }
 
-const MAX_PRIMARY_QUERIES = 10;
+/** Meno varianti di query = meno latenza; qualità resta alta grazie al parallelo. */
+const MAX_PRIMARY_QUERIES = 7;
 
 function pushArtistAlbumQueries(queries: string[], artist: string, album: string) {
   const a = sanitizePhraseForQuery(artist);

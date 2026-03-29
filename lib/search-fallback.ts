@@ -3,7 +3,8 @@ import { perplexitySearch, type PerplexitySearchResult } from '@/lib/perplexity'
 import { capResultList, MAX_RESULTS_IN_PIPELINE } from '@/lib/result-size-limits';
 import { sanitizePhraseForQuery } from '@/lib/search-input';
 
-const MIN_RESULTS_BEFORE_FALLBACK = 3;
+/** Con almeno così tanti URL unici, saltiamo i fallback (risparmiamo ~15–30s). */
+const MIN_RESULTS_BEFORE_FALLBACK = 7;
 
 function mergeDedupe(
   primary: PerplexitySearchResult[],
@@ -48,7 +49,7 @@ export function buildFallbackSearchQueries(artist: string, album: string): strin
     out.push(`${b} album music`, `${b} record review`, `${b} album release`);
   }
 
-  return [...new Set(out)].slice(0, 8);
+  return [...new Set(out)].slice(0, 5);
 }
 
 /** Singola ondata “larga” senza filtro lingua. */
@@ -99,13 +100,16 @@ export async function runPerplexityWithFallback(
     return raw;
   }
 
-  const broad = buildBroadQueries(artist, album);
-  if (broad.length > 0) {
-    const extra2 = await perplexitySearch(broad, {
-      maxResults: Math.min(maxResults, 20),
-      language: undefined,
-    });
-    raw = capResultList(mergeDedupe(raw, extra2), MAX_RESULTS_IN_PIPELINE);
+  /** Ultima rete di sicurezza solo se ancora pochi risultati (2 query, costo contenuto). */
+  if (raw.length < 5) {
+    const broad = buildBroadQueries(artist, album);
+    if (broad.length > 0) {
+      const extra2 = await perplexitySearch(broad, {
+        maxResults: Math.min(maxResults, 20),
+        language: undefined,
+      });
+      raw = capResultList(mergeDedupe(raw, extra2), MAX_RESULTS_IN_PIPELINE);
+    }
   }
 
   return capResultList(raw, MAX_RESULTS_IN_PIPELINE);

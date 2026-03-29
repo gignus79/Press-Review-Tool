@@ -84,6 +84,65 @@ function normalizeCategorizedRow(
   };
 }
 
+type RawRow = { title: string; url: string; snippet: string; date?: string };
+
+async function categorizeBatchWithAnthropic(
+  anthropic: Anthropic,
+  systemPrompt: string,
+  keywords: string[],
+  batch: RawRow[]
+): Promise<CategorizedResult[]> {
+  if (batch.length === 0) return [];
+
+  const context = batch.map((r) => ({
+    title: r.title.slice(0, 200),
+    url: r.url.slice(0, MAX_RESULT_URL_LEN),
+    description: r.snippet.slice(0, 400),
+    date: r.date || 'N/A',
+  }));
+
+  try {
+    const response = await anthropic.messages.create({
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 2800,
+      system: systemPrompt,
+      messages: [
+        {
+          role: 'user',
+          content: `Keywords: ${keywords.join(', ')}\n\nResults:\n${JSON.stringify(context)}`,
+        },
+      ],
+    });
+
+    const text = response.content[0].type === 'text' ? response.content[0].text : '';
+    const start = text.indexOf('[');
+    const end = text.lastIndexOf(']') + 1;
+    if (start >= 0 && end > start) {
+      try {
+        const parsed = JSON.parse(text.slice(start, end)) as unknown;
+        if (
+          Array.isArray(parsed) &&
+          parsed.length <= batch.length * MAX_MODEL_ITEMS_PER_BATCH_FACTOR
+        ) {
+          const out: CategorizedResult[] = [];
+          for (let j = 0; j < batch.length; j++) {
+            out.push(normalizeCategorizedRow(parsed[j], batch[j]!));
+          }
+          return out;
+        }
+      } catch {
+        // malformed JSON from model — use fallback for this batch
+      }
+    }
+    return fallbackFromBatch(batch);
+  } catch (err) {
+    const hint =
+      err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
+    console.error('[categorize] Anthropic request failed, using heuristic fallback:', hint);
+    return fallbackFromBatch(batch);
+  }
+}
+
 export async function categorizeResults(
   results: Array<{ title: string; url: string; snippet: string; date?: string }>,
   keywords: string[]
@@ -111,57 +170,18 @@ For each RELEVANT result, return a JSON object with:
 
 Return ONE JSON array with EXACTLY one object per input result, same order. No extra items. Return ONLY valid JSON, no other text.`;
 
-  const batchSize = 12;
+  /** Batch più grandi = meno round-trip; 2 batch in parallelo ≈ metà tempo rispetto al sequenziale. */
+  const batchSize = 16;
   const categorized: CategorizedResult[] = [];
 
-  for (let i = 0; i < capped.length; i += batchSize) {
-    const batch = capped.slice(i, i + batchSize);
-    const context = batch.map((r) => ({
-      title: r.title.slice(0, 200),
-      url: r.url.slice(0, MAX_RESULT_URL_LEN),
-      description: r.snippet.slice(0, 400),
-      date: r.date || 'N/A',
-    }));
-
-    try {
-      const response = await anthropic.messages.create({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 3200,
-        system: systemPrompt,
-        messages: [
-          {
-            role: 'user',
-            content: `Keywords: ${keywords.join(', ')}\n\nResults:\n${JSON.stringify(context)}`,
-          },
-        ],
-      });
-
-      const text = response.content[0].type === 'text' ? response.content[0].text : '';
-      const start = text.indexOf('[');
-      const end = text.lastIndexOf(']') + 1;
-      if (start >= 0 && end > start) {
-        try {
-          const parsed = JSON.parse(text.slice(start, end)) as unknown;
-          if (
-            Array.isArray(parsed) &&
-            parsed.length <= batch.length * MAX_MODEL_ITEMS_PER_BATCH_FACTOR
-          ) {
-            for (let j = 0; j < batch.length; j++) {
-              categorized.push(normalizeCategorizedRow(parsed[j], batch[j]!));
-            }
-            continue;
-          }
-        } catch {
-          // malformed JSON from model — use fallback for this batch
-        }
-      }
-      categorized.push(...fallbackFromBatch(batch));
-    } catch (err) {
-      const hint =
-        err instanceof Error ? err.message : typeof err === 'string' ? err : JSON.stringify(err);
-      console.error('[categorize] Anthropic request failed, using heuristic fallback:', hint);
-      categorized.push(...fallbackFromBatch(batch));
-    }
+  for (let i = 0; i < capped.length; i += batchSize * 2) {
+    const batchA = capped.slice(i, i + batchSize);
+    const batchB = capped.slice(i + batchSize, i + batchSize * 2);
+    const [outA, outB] = await Promise.all([
+      categorizeBatchWithAnthropic(anthropic, systemPrompt, keywords, batchA),
+      categorizeBatchWithAnthropic(anthropic, systemPrompt, keywords, batchB),
+    ]);
+    categorized.push(...outA, ...outB);
   }
 
   return categorized;

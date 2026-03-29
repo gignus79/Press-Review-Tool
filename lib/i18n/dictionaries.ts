@@ -162,7 +162,7 @@ export const dictionaries = {
       unexpectedResponse:
         'Il server ha risposto in modo imprevisto (spesso pagina HTML invece di dati). Può dipendere da sessione scaduta, timeout o manutenzione. Aggiorna la pagina, effettua di nuovo l’accesso e riprova.',
       timeoutOrGateway:
-        'La ricerca ha impiegato troppo tempo e il server ha interrotto la richiesta (timeout). Su Vercel il piano Hobby consente fino a ~60 secondi per funzione; con ricerche lunghe (Perplexity + AI) conviene il piano Pro (fino a 5 minuti) o riprovare con una query più corta. Aggiorna la pagina e riprova.',
+        'La ricerca ha superato il tempo massimo (~60s sul piano Vercel Hobby). L’app è tarata per restare sotto questo limite: aggiorna la pagina e riprova. Se succede spesso, le API esterne (Perplexity o Anthropic) potrebbero essere lente; in futuro il piano Pro consente funzioni più lunghe.',
     },
     history: {
       title: 'Storico ricerche',
@@ -371,7 +371,7 @@ export const dictionaries = {
       unexpectedResponse:
         'The server returned an unexpected response (often an HTML error page instead of data). This may mean your session expired, the request timed out, or the service is busy. Refresh the page, sign in again, and retry.',
       timeoutOrGateway:
-        'The search took too long and the server stopped the request (timeout). On Vercel, Hobby allows about 60s per function; long searches (Perplexity + AI) usually need Pro (up to 5 minutes). Try a shorter query or upgrade the plan, then refresh and retry.',
+        'The search exceeded the time limit (~60s on Vercel Hobby). The app is tuned for that cap—refresh and try again. If this keeps happening, external APIs may be slow; Pro allows longer functions later.',
     },
     history: {
       title: 'Search history',
@@ -580,7 +580,7 @@ export const dictionaries = {
       unexpectedResponse:
         'El servidor devolvió una respuesta inesperada (a menudo HTML en lugar de datos). Puede deberse a sesión caducada, tiempo de espera o mantenimiento. Actualiza la página, vuelve a iniciar sesión e inténtalo de nuevo.',
       timeoutOrGateway:
-        'La búsqueda tardó demasiado y el servidor cortó la petición (timeout). En Vercel, Hobby permite ~60s por función; búsquedas largas (Perplexity + IA) suelen requerir Pro (hasta 5 min). Prueba una consulta más corta o mejora el plan, actualiza y reintenta.',
+        'La búsqueda superó el límite de tiempo (~60s en Vercel Hobby). La app está ajustada para ese tope: actualiza y reintenta. Si persiste, las APIs externas pueden ir lentas; Pro permite funciones más largas.',
     },
     history: {
       title: 'Historial',
@@ -789,7 +789,7 @@ export const dictionaries = {
       unexpectedResponse:
         'Le serveur a renvoyé une réponse inattendue (souvent une page HTML au lieu de données). Cela peut indiquer une session expirée, un délai dépassé ou une maintenance. Actualisez la page, reconnectez-vous et réessayez.',
       timeoutOrGateway:
-        'La recherche a pris trop de temps et le serveur a interrompu la requête (timeout). Sur Vercel, Hobby autorise ~60s par fonction ; les recherches longues (Perplexity + IA) nécessitent souvent Pro (jusqu’à 5 min). Essayez une requête plus courte ou passez à un plan supérieur, puis actualisez.',
+        'La recherche a dépassé la limite (~60s sur Vercel Hobby). L’app est réglée pour ce plafond : actualisez et réessayez. Si cela se répète, les API externes peuvent être lentes ; Pro autorise des fonctions plus longues.',
     },
     history: {
       title: 'Historique',
