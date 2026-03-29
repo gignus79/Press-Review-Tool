@@ -115,7 +115,10 @@ function SearchPageInner() {
             });
             const parsed = await parseJsonFromResponse(res);
             if (!parsed.ok) {
-              alert(t.search.unexpectedResponse);
+              const st = res.status;
+              const likelyTimeout =
+                st === 504 || st === 502 || st === 503 || st === 524;
+              alert(likelyTimeout ? t.search.timeoutOrGateway : t.search.unexpectedResponse);
               return;
             }
             const data = parsed.data as {

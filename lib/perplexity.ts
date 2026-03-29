@@ -21,6 +21,43 @@ export interface PerplexitySearchResponse {
   id?: string;
 }
 
+const MAX_QUERIES_PER_WAVE = 10;
+/** Chiamate Perplexity in parallelo per ridurre il tempo totale (evita timeout Vercel). */
+const PERPLEXITY_CONCURRENCY = 4;
+
+async function fetchPerplexityForQuery(
+  query: string,
+  apiKey: string,
+  options: { maxResults: number; language?: string }
+): Promise<PerplexitySearchResult[]> {
+  const body: Record<string, unknown> = {
+    query,
+    max_results: Math.min(options.maxResults ?? 20, 20),
+  };
+
+  if (options.language && options.language !== 'multi') {
+    body.search_language_filter = [options.language];
+  }
+
+  const response = await fetch(PERPLEXITY_API_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${apiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(body),
+  });
+
+  if (!response.ok) {
+    const err = await response.text();
+    throw new Error(`Perplexity API error: ${response.status} - ${err}`);
+  }
+
+  const data = (await response.json()) as PerplexitySearchResponse;
+  if (!data.results?.length) return [];
+  return data.results.map((r) => clampRawSearchHit(r));
+}
+
 export async function perplexitySearch(
   queries: string[],
   options: {
@@ -33,39 +70,22 @@ export async function perplexitySearch(
     throw new Error('PERPLEXITY_API_KEY is not configured');
   }
 
+  const maxResults = options.maxResults ?? 20;
+  const language = options.language;
+  const queue = queries.slice(0, MAX_QUERIES_PER_WAVE);
   const allResults: PerplexitySearchResult[] = [];
   const seenUrls = new Set<string>();
 
-  for (const query of queries.slice(0, 10)) {
-    const body: Record<string, unknown> = {
-      query,
-      max_results: Math.min(options.maxResults ?? 20, 20),
-    };
-
-    if (options.language && options.language !== 'multi') {
-      body.search_language_filter = [options.language];
-    }
-
-    const response = await fetch(PERPLEXITY_API_URL, {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(body),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      throw new Error(`Perplexity API error: ${response.status} - ${err}`);
-    }
-
-    const data = (await response.json()) as PerplexitySearchResponse;
-    if (data.results) {
-      for (const r of data.results) {
+  for (let i = 0; i < queue.length; i += PERPLEXITY_CONCURRENCY) {
+    const chunk = queue.slice(i, i + PERPLEXITY_CONCURRENCY);
+    const lists = await Promise.all(
+      chunk.map((q) => fetchPerplexityForQuery(q, apiKey, { maxResults, language }))
+    );
+    for (const list of lists) {
+      for (const r of list) {
         if (r.url && !seenUrls.has(r.url)) {
           seenUrls.add(r.url);
-          allResults.push(clampRawSearchHit(r));
+          allResults.push(r);
           if (allResults.length >= MAX_RESULTS_IN_PIPELINE) {
             return allResults;
           }
