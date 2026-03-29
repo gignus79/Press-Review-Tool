@@ -69,7 +69,14 @@ Copy **`.env.example`** → **`.env.local`**. Minimum categories:
 | **Perplexity** | `PERPLEXITY_API_KEY` — primary search backend. |
 | **Anthropic** | `ANTHROPIC_API_KEY` — optional categorization (see below). |
 | **Stripe** | Secret, webhook secret, price IDs, publishable key. |
-| **App** | `NEXT_PUBLIC_APP_URL`, optional `FREE_ACCOUNTS_PER_IP_LIMIT`. |
+| **App** | `NEXT_PUBLIC_APP_URL` (URL canonico del sito, **senza** slash finale — usato per Open Graph / Twitter e link assoluti), optional `FREE_ACCOUNTS_PER_IP_LIMIT`. |
+| **Email (feedback)** | Optional `RESEND_API_KEY` + `RESEND_FROM_EMAIL` — copia notifiche a developer@toskyrecords.com (vedi `.env.example`). |
+
+### Social previews (Open Graph / Twitter / Vercel checks)
+
+- Imposta **`NEXT_PUBLIC_APP_URL`** in produzione al dominio pubblico reale (es. `https://press-review-tool.labeltools.toskyrecords.com`). Senza questo valore, `metadataBase` e gli URL di `og:image` / `twitter:image` possono puntare al dominio `.vercel.app` o risultare errati nei tool di anteprima.
+- Il progetto espone immagini generate (`/opengraph-image`, `/twitter-image`) e meta tag `twitter:card=summary_large_image`, `og:image`, ecc. nel layout root (`app/layout.tsx`).
+- Per validare: Vercel **Deployment → Checks** oppure condividi l’URL della **home** `/` (route pubblica). Route protette (es. `/dashboard` senza sessione) possono mostrare titoli diversi o redirect: non usarle come URL di test per OG.
 
 ---
 
