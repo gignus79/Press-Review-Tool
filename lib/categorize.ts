@@ -5,20 +5,10 @@ import {
   MAX_RESULT_TITLE_LEN,
   MAX_RESULT_URL_LEN,
 } from '@/lib/result-size-limits';
+import type { ContentType, PressResultCore } from '@/lib/press-types';
 
-export type ContentType = 'Review' | 'Interview' | 'Article' | 'News' | 'Streaming' | 'Other';
-export type Relevance = 'High' | 'Medium' | 'Low';
-
-export interface CategorizedResult {
-  title: string;
-  url: string;
-  description: string;
-  date: string;
-  relevance: Relevance;
-  content_type: ContentType;
-  source: string;
-  language: string;
-}
+export type { ContentType };
+export type CategorizedResult = PressResultCore;
 
 function extractHostname(url: string): string {
   try {
@@ -40,7 +30,6 @@ function fallbackFromBatch(
     url: r.url.slice(0, MAX_RESULT_URL_LEN),
     description: r.snippet.slice(0, MAX_DESC_LEN),
     date: (r.date || 'N/A').slice(0, 32),
-    relevance: 'Medium' as Relevance,
     content_type: 'Article' as ContentType,
     source: extractHostname(r.url).slice(0, MAX_SOURCE_LEN),
     language: 'EN',
@@ -59,7 +48,6 @@ function normalizeCategorizedRow(
   const url = String(o.url ?? fallback.url).slice(0, MAX_RESULT_URL_LEN);
   const description = String(o.description ?? fallback.snippet).slice(0, MAX_DESC_LEN);
   const dateRaw = o.date != null ? String(o.date) : fallback.date || 'N/A';
-  const rel = o.relevance === 'High' || o.relevance === 'Low' ? o.relevance : 'Medium';
   const ct = [
     'Review',
     'Interview',
@@ -77,7 +65,6 @@ function normalizeCategorizedRow(
     url,
     description,
     date: dateRaw.slice(0, 32),
-    relevance: rel as Relevance,
     content_type: ct,
     source,
     language,
@@ -106,7 +93,7 @@ async function categorizeBatchWithAnthropic(
     const response = await anthropic.messages.create(
       {
         model: 'claude-sonnet-4-20250514',
-        max_tokens: batch.length >= 20 ? 4500 : 2800,
+        max_tokens: batch.length >= 20 ? 4200 : 2400,
         system: systemPrompt,
         messages: [
           {
@@ -165,24 +152,21 @@ export async function categorizeResults(
 
   const anthropic = new Anthropic({ apiKey });
 
-  const systemPrompt = `You are an expert music press analyst. Analyze these search results and categorize each one.
+  const systemPrompt = `You are an expert music press analyst. Categorize each search result for a music press digest.
 
-For each RELEVANT result, return a JSON object with:
+For each result, return a JSON object with:
 - title: full title (max ~200 chars)
 - url: full URL
 - description: concise summary (max ~400 chars; do not paste long article bodies)
 - date: YYYY-MM-DD or "N/A"
-- relevance: "High", "Medium" or "Low"
 - content_type: "Review", "Interview", "Article", "News", "Streaming", or "Other"
 - source: publication/site name
 - language: ISO code (EN, IT, etc.)
 
+Prefer types that reflect press coverage (reviews, interviews, articles) when the text supports it.
+
 Return ONE JSON array with EXACTLY one object per input result, same order. No extra items. Return ONLY valid JSON, no other text.`;
 
-  /**
-   * Hobby 60s: una sola chiamata Anthropic sui primi N risultati; il resto con euristica
-   * (stesso schema dati, tipi/relevance “Article/Medium” di default).
-   */
   const ANTHROPIC_HEAD = 24;
   const head = capped.slice(0, ANTHROPIC_HEAD);
   const tail = capped.slice(ANTHROPIC_HEAD);

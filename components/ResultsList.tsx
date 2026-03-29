@@ -12,10 +12,10 @@ interface Result {
   url: string;
   description: string;
   date: string;
-  relevance: string;
   content_type: string;
   source: string;
   language: string;
+  match_score?: number;
 }
 
 interface ResultsListProps {
@@ -26,26 +26,10 @@ interface ResultsListProps {
 
 const TYPE_ORDER = ['Review', 'Interview', 'Article', 'News', 'Streaming', 'Other'] as const;
 
-type SortMode = 'rel-desc' | 'rel-asc' | 'date-desc' | 'date-asc';
+type SortMode = 'match-desc' | 'date-desc' | 'date-asc';
 
-/** Normalize API/model output (case, spacing, partial strings). */
-function normalizeRelevance(rel: string): 'High' | 'Medium' | 'Low' {
-  const s = (rel || '').trim().toLowerCase();
-  if (s === 'high' || s === 'h') return 'High';
-  if (s === 'low' || s === 'l') return 'Low';
-  if (s === 'medium' || s === 'm') return 'Medium';
-  if (s.includes('high')) return 'High';
-  if (s.includes('low')) return 'Low';
-  if (s.includes('medium')) return 'Medium';
-  return 'Medium';
-}
-
-function relevanceScore(rel: string): number {
-  const n = normalizeRelevance(rel);
-  if (n === 'High') return 3;
-  if (n === 'Medium') return 2;
-  if (n === 'Low') return 1;
-  return 0;
+function matchScore(r: Result): number {
+  return typeof r.match_score === 'number' ? r.match_score : 0;
 }
 
 function titleTieBreak(a: Result, b: Result): number {
@@ -67,13 +51,9 @@ function compareByDate(a: Result, b: Result, order: 'desc' | 'asc'): number {
 
 function sortPair(a: Result, b: Result, mode: SortMode): number {
   switch (mode) {
-    case 'rel-desc': {
-      const dr = relevanceScore(b.relevance) - relevanceScore(a.relevance);
-      return dr !== 0 ? dr : compareByDate(a, b, 'desc');
-    }
-    case 'rel-asc': {
-      const dr = relevanceScore(a.relevance) - relevanceScore(b.relevance);
-      return dr !== 0 ? dr : compareByDate(a, b, 'asc');
+    case 'match-desc': {
+      const dm = matchScore(b) - matchScore(a);
+      return dm !== 0 ? dm : compareByDate(a, b, 'desc');
     }
     case 'date-desc':
       return compareByDate(a, b, 'desc');
@@ -104,26 +84,37 @@ function labelForContentType(
   }
 }
 
+function matchesTextFilter(r: Result, q: string): boolean {
+  const s = q.trim().toLowerCase();
+  if (!s) return true;
+  const hay = `${r.title} ${r.description} ${r.source}`.toLowerCase();
+  return hay.includes(s);
+}
+
 export function ResultsList({ query, results, exportId }: ResultsListProps) {
   const { t } = useI18n();
-  const [sortMode, setSortMode] = useState<SortMode>('rel-desc');
+  const [sortMode, setSortMode] = useState<SortMode>('match-desc');
+  const [textFilter, setTextFilter] = useState('');
+  const [typeFilter, setTypeFilter] = useState<'all' | (typeof TYPE_ORDER)[number]>('all');
 
-  const relLabel = (rel: string) => {
-    const n = normalizeRelevance(rel);
-    if (n === 'High') return t.results.relHigh;
-    if (n === 'Medium') return t.results.relMedium;
-    return t.results.relLow;
-  };
+  const filtered = useMemo(() => {
+    return results.filter((r) => {
+      if (typeFilter !== 'all' && (r.content_type || 'Other') !== typeFilter) {
+        return false;
+      }
+      return matchesTextFilter(r, textFilter);
+    });
+  }, [results, textFilter, typeFilter]);
 
   const byType = useMemo(
     () =>
       TYPE_ORDER.reduce<Record<string, Result[]>>((acc, ty) => {
-        const group = results.filter((r) => (r.content_type || 'Other') === ty);
+        const group = filtered.filter((r) => (r.content_type || 'Other') === ty);
         group.sort((a, b) => sortPair(a, b, sortMode));
         acc[ty] = group;
         return acc;
       }, {}),
-    [results, sortMode]
+    [filtered, sortMode]
   );
 
   return (
@@ -135,8 +126,50 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
         <span className="text-sm text-[var(--tosky-muted)]">{t.nav.productShort}</span>
       </div>
       <h2 className="text-xl font-bold text-[var(--tosky-dark)] mb-4">
-        {t.results.title} ({results.length})
+        {t.results.title} ({filtered.length}
+        {filtered.length !== results.length ? ` / ${results.length}` : ''})
       </h2>
+
+      <div className="mb-6 flex flex-col gap-4 rounded-xl border border-[var(--tosky-border)] bg-[var(--tosky-lighter-gray)] p-4 dark:bg-zinc-900/40">
+        <div className="text-xs font-bold uppercase tracking-wide text-[var(--tosky-text-gray)]">
+          {t.results.filterSection}
+        </div>
+        <div className="flex flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-end">
+          <div className="min-w-0 flex-1">
+            <label htmlFor="results-text-filter" className="mb-1 block text-xs font-semibold text-[var(--tosky-text-gray)]">
+              {t.results.filterSearchLabel}
+            </label>
+            <input
+              id="results-text-filter"
+              type="search"
+              value={textFilter}
+              onChange={(e) => setTextFilter(e.target.value)}
+              placeholder={t.results.filterSearchPlaceholder}
+              className="w-full rounded-md border border-[var(--tosky-border)] bg-[var(--tosky-card)] px-3 py-2 text-sm text-[var(--tosky-dark)] placeholder:text-[var(--tosky-muted)] focus:outline-none focus:ring-2 focus:ring-[var(--tosky-primary)]/30"
+            />
+          </div>
+          <div className="w-full sm:w-auto sm:min-w-[11rem]">
+            <label htmlFor="results-type-filter" className="mb-1 block text-xs font-semibold text-[var(--tosky-text-gray)]">
+              {t.results.filterTypesLabel}
+            </label>
+            <select
+              id="results-type-filter"
+              value={typeFilter}
+              onChange={(e) =>
+                setTypeFilter(e.target.value as typeof typeFilter)
+              }
+              className="w-full cursor-pointer rounded-md border border-[var(--tosky-border)] bg-[var(--tosky-card)] px-3 py-2 text-sm font-medium text-[var(--tosky-dark)]"
+            >
+              <option value="all">{t.results.filterTypeAll}</option>
+              {TYPE_ORDER.map((ty) => (
+                <option key={ty} value={ty}>
+                  {labelForContentType(ty, t.results)}
+                </option>
+              ))}
+            </select>
+          </div>
+        </div>
+      </div>
 
       <div className="flex flex-wrap items-center gap-3">
         <ExportButtons exportId={exportId} />
@@ -144,7 +177,7 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
           exportId={exportId}
           artist={query.artist}
           album={query.album}
-          resultCount={results.length}
+          resultCount={filtered.length}
         />
         <div className="ml-auto flex items-center gap-2">
           <label htmlFor="results-sort" className="text-xs font-semibold text-[var(--tosky-text-gray)]">
@@ -154,10 +187,9 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
             id="results-sort"
             value={sortMode}
             onChange={(e) => setSortMode(e.target.value as SortMode)}
-            className="max-w-[min(100vw-2rem,20rem)] cursor-pointer rounded-md border border-[var(--tosky-border)] bg-[var(--tosky-card)] px-2.5 py-1.5 text-xs font-semibold text-[var(--tosky-dark)] shadow-sm"
+            className="max-w-[min(100vw-2rem,22rem)] cursor-pointer rounded-md border border-[var(--tosky-border)] bg-[var(--tosky-card)] px-2.5 py-1.5 text-xs font-semibold text-[var(--tosky-dark)] shadow-sm"
           >
-            <option value="rel-desc">{t.results.sortRelDesc}</option>
-            <option value="rel-asc">{t.results.sortRelAsc}</option>
+            <option value="match-desc">{t.results.sortMatchDesc}</option>
             <option value="date-desc">{t.results.sortDateDesc}</option>
             <option value="date-asc">{t.results.sortDateAsc}</option>
           </select>
@@ -175,46 +207,30 @@ export function ResultsList({ query, results, exportId }: ResultsListProps) {
                 {typeLabel} ({items.length})
               </h3>
               <div className="space-y-4">
-                {items.map((r, i) => {
-                  const relNorm = normalizeRelevance(r.relevance);
-                  return (
-                    <div
-                      key={`${type}-${i}-${r.url}`}
-                      className="p-4 bg-[var(--tosky-lighter-gray)] rounded-[4px] border-l-4 border-[var(--tosky-primary)]"
+                {items.map((r, i) => (
+                  <div
+                    key={`${type}-${i}-${r.url}`}
+                    className="p-4 bg-[var(--tosky-lighter-gray)] rounded-[4px] border-l-4 border-[var(--tosky-primary)] dark:bg-zinc-800/60"
+                  >
+                    <h4 className="font-semibold text-[var(--tosky-dark)] mb-2 pr-2">
+                      {r.title}
+                    </h4>
+                    <p className="text-sm text-[var(--tosky-text-gray)] mb-2">
+                      {r.source} | {r.date} | {r.language}
+                    </p>
+                    <p className="text-sm text-[var(--tosky-base-text)] mb-2">
+                      {r.description}
+                    </p>
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[var(--tosky-primary)] font-semibold hover:underline"
                     >
-                      <div className="flex justify-between items-start mb-2">
-                        <h4 className="font-semibold text-[var(--tosky-dark)] flex-1">
-                          {r.title}
-                        </h4>
-                        <span
-                          className={`px-3 py-1 rounded text-xs font-semibold uppercase ${
-                            relNorm === 'High'
-                              ? 'border border-emerald-300 bg-emerald-100 text-emerald-900 dark:border-emerald-400/30 dark:bg-emerald-500/20 dark:text-emerald-200'
-                              : relNorm === 'Medium'
-                                ? 'border border-amber-300 bg-amber-100 text-amber-900 dark:border-amber-400/30 dark:bg-amber-500/20 dark:text-amber-200'
-                                : 'border border-rose-300 bg-rose-100 text-rose-900 dark:border-rose-400/30 dark:bg-rose-500/20 dark:text-rose-200'
-                          }`}
-                        >
-                          {relLabel(r.relevance)}
-                        </span>
-                      </div>
-                      <p className="text-sm text-[var(--tosky-text-gray)] mb-2">
-                        {r.source} | {r.date} | {r.language}
-                      </p>
-                      <p className="text-sm text-[var(--tosky-base-text)] mb-2">
-                        {r.description}
-                      </p>
-                      <a
-                        href={r.url}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-[var(--tosky-primary)] font-semibold hover:underline"
-                      >
-                        {t.results.readArticle}
-                      </a>
-                    </div>
-                  );
-                })}
+                      {t.results.readArticle}
+                    </a>
+                  </div>
+                ))}
               </div>
             </section>
           );

@@ -31,7 +31,7 @@
 
 | Area | Details |
 |------|---------|
-| **Search** | Artist / release queries via Perplexity-backed retrieval with fallbacks. |
+| **Search** | Perplexity-backed retrieval with fallbacks; **post-ranking** by match to artist/album (tokens + phrase overlap, light URL cleanup) — no fake “relevance” labels. |
 | **Classification** | Optional Anthropic Claude enrichment; automatic heuristic fallback if the API is unavailable. |
 | **Exports** | PDF, Excel, CSV, JSON from saved searches. |
 | **Auth & billing** | Clerk authentication; Stripe subscriptions (Pro / Business) with plan sync. |

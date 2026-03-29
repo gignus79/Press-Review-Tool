@@ -14,10 +14,10 @@ type ResultRow = {
   url: string;
   description: string;
   date: string;
-  relevance: string;
   content_type: string;
   source: string;
   language: string;
+  match_score?: number;
 };
 
 type ResultsState = {

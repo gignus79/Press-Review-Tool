@@ -4,6 +4,7 @@ import { sql, ensureSchema } from '@/lib/db';
 import { buildSearchQueries } from '@/lib/perplexity';
 import { runPerplexityWithFallback } from '@/lib/search-fallback';
 import { categorizeResults } from '@/lib/categorize';
+import { rankPressSearchResults } from '@/lib/search-rank';
 import { getSearchLimit } from '@/lib/tier-utils';
 import { resultInDateRange, parseResultDate } from '@/lib/date-result-filter';
 import { FREE_ACCOUNTS_PER_IP_LIMIT, getClientIp, hashIp } from '@/lib/ip-guard';
@@ -203,7 +204,7 @@ export async function POST(req: Request) {
       return abortedSearchResponse();
     }
 
-    let filtered = categorized;
+    let filtered = rankPressSearchResults(categorized, artist || '', album || '');
     if (content_filter !== 'All') {
       const map: Record<string, string[]> = {
         'Reviews Only': ['Review'],
@@ -212,7 +213,7 @@ export async function POST(req: Request) {
       };
       const allowed = map[content_filter];
       if (allowed) {
-        filtered = categorized.filter((r) => allowed.includes(r.content_type));
+        filtered = filtered.filter((r) => allowed.includes(r.content_type));
       }
     }
 

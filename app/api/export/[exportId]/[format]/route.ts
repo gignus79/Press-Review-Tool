@@ -12,7 +12,7 @@ function flattenExportRow(r: Record<string, unknown>) {
     language: String(r.language ?? ''),
     date: String(r.date ?? ''),
     content_type: String(r.content_type ?? ''),
-    relevance: String(r.relevance ?? ''),
+    match_score: String(r.match_score ?? ''),
     url: String(r.url ?? ''),
     description: String(r.description ?? ''),
   };
@@ -93,7 +93,7 @@ export async function GET(
         'language',
         'date',
         'content_type',
-        'relevance',
+        'match_score',
         'url',
         'description',
       ] as const;
@@ -121,7 +121,7 @@ export async function GET(
         'language',
         'date',
         'content_type',
-        'relevance',
+        'match_score',
         'url',
         'description',
       ] as const;

@@ -2,15 +2,23 @@
 
 import Link from 'next/link';
 import { UserButton } from '@clerk/nextjs';
+import { useTheme } from 'next-themes';
+import { useMemo } from 'react';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { LanguageSwitcher } from '@/components/LanguageSwitcher';
 import { NewsletterButton } from '@/components/NewsletterButton';
 import { FeedbackButton } from '@/components/FeedbackButton';
 import { BrandLogo } from '@/components/BrandLogo';
 import { useI18n } from '@/lib/i18n/context';
+import { buildUserButtonAppearance } from '@/lib/clerk-appearance';
 
 export function Header() {
   const { t } = useI18n();
+  const { resolvedTheme } = useTheme();
+  const userButtonAppearance = useMemo(
+    () => buildUserButtonAppearance(resolvedTheme !== 'light'),
+    [resolvedTheme]
+  );
 
   return (
     <header
@@ -20,13 +28,16 @@ export function Header() {
       <div className="mx-auto flex min-h-[4.25rem] max-w-6xl flex-col gap-2 px-3 py-2 sm:min-h-[4.75rem] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2 sm:px-4 sm:py-1">
         <Link
           href="/"
-          className="flex min-w-0 shrink-0 items-center gap-3 text-[var(--tosky-dark)] dark:text-zinc-100"
+          className="flex min-w-0 shrink-0 items-center gap-3 text-[#2a2a2a] dark:text-zinc-100"
           title={`${t.nav.brandLabel} · ${t.nav.productShort}`}
         >
-          <BrandLogo className="h-14 w-[min(100%,240px)] shrink-0 sm:h-16 sm:w-[260px]" />
-          <span className="flex min-w-0 max-w-[9rem] flex-col leading-tight sm:max-w-none">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[var(--tosky-muted)] sm:text-[11px]">
+          <BrandLogo className="h-14 w-[min(100%,240px)] shrink-0 text-[#2a2a2a] dark:text-zinc-100 sm:h-16 sm:w-[260px]" />
+          <span className="flex min-w-0 max-w-[11rem] flex-col leading-tight sm:max-w-none">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#5c5c5c] dark:text-zinc-400 sm:text-[11px]">
               {t.nav.productShort}
+            </span>
+            <span className="text-[9px] font-medium leading-tight text-[#7a7a7a] dark:text-zinc-500">
+              {t.nav.poweredBy}
             </span>
           </span>
         </Link>
@@ -55,7 +66,7 @@ export function Header() {
           <FeedbackButton className="inline-flex" />
           <LanguageSwitcher />
           <ThemeToggle />
-          <UserButton />
+          <UserButton appearance={userButtonAppearance} />
         </div>
       </div>
     </header>

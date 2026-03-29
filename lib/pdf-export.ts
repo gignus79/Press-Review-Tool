@@ -18,7 +18,7 @@ interface ExportData {
     url?: string;
     description?: string;
     date?: string;
-    relevance?: string;
+    match_score?: number | string;
     content_type?: string;
     source?: string;
     language?: string;
@@ -32,7 +32,9 @@ function measureResultBlock(doc: jsPDF, r: ExportData['results'][0], innerW: num
 
   doc.setFont('helvetica', 'normal');
   doc.setFontSize(8);
-  const meta = [r.source, r.date, r.content_type, r.relevance].filter(Boolean).join('  ·  ');
+  const meta = [r.source, r.date, r.content_type, r.match_score != null && r.match_score !== '' ? `score ${r.match_score}` : '']
+    .filter(Boolean)
+    .join('  ·  ');
   const metaH = meta ? doc.splitTextToSize(meta, innerW).length * 4.2 : 0;
 
   doc.setFontSize(8.5);
@@ -132,7 +134,9 @@ export async function simplePdf(data: ExportData): Promise<Buffer> {
     doc.setFont('helvetica', 'normal');
     doc.setFontSize(8);
     doc.setTextColor(...BRAND.muted);
-    const meta = [r.source, r.date, r.content_type, r.relevance].filter(Boolean).join('  ·  ');
+    const meta = [r.source, r.date, r.content_type, r.match_score != null && r.match_score !== '' ? `score ${r.match_score}` : '']
+    .filter(Boolean)
+    .join('  ·  ');
     if (meta) {
       const metaLines = doc.splitTextToSize(meta, innerW);
       doc.text(metaLines, margin + 3, y + 2);

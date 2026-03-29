@@ -15,9 +15,9 @@ export function NewsletterButton({ className = '' }: { className?: string }) {
       rel="noopener noreferrer"
       className={clsx(
         'inline-flex items-center gap-2 rounded-[99px] border-2 border-[#3d3d3d] px-4 py-2 text-sm font-semibold',
-        'text-[var(--tosky-dark)] transition-colors',
+        'text-[#2a2a2a] transition-colors dark:text-zinc-100',
         'hover:border-[var(--tosky-primary)] hover:bg-[var(--tosky-primary)] hover:text-white',
-        'dark:border-zinc-600 dark:text-zinc-100',
+        'dark:border-zinc-600',
         'dark:hover:border-[var(--tosky-primary)] dark:hover:bg-[var(--tosky-primary)] dark:hover:text-white',
         'active:scale-[0.98]',
         className

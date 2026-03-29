@@ -1,19 +1,15 @@
 'use client';
 
 import { SignIn } from '@clerk/nextjs';
-import { useTheme } from 'next-themes';
 import { useMemo } from 'react';
 import { buildClerkAppearance } from '@/lib/clerk-appearance';
 
+/** Pagina auth dedicata: sempre tema scuro (allineato al layout Resend-like). */
 export function ClerkSignInView() {
-  const { resolvedTheme } = useTheme();
-  const appearance = useMemo(() => {
-    const isDark = resolvedTheme !== 'light';
-    return buildClerkAppearance(isDark);
-  }, [resolvedTheme]);
+  const appearance = useMemo(() => buildClerkAppearance(true), []);
 
   return (
-    <div className="w-full">
+    <div className="w-full max-w-[440px]">
       <SignIn
         forceRedirectUrl="/dashboard"
         fallbackRedirectUrl="/dashboard"
