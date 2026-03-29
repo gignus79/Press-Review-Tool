@@ -30,7 +30,7 @@ export function SearchForm({
   const [artist, setArtist] = useState(initialArtist);
   const [album, setAlbum] = useState(initialAlbum);
   const [language, setLanguage] = useState('en');
-  const [depth, setDepth] = useState(50);
+  const [depth, setDepth] = useState(12);
   const [filter, setFilter] = useState('All');
   const [period, setPeriod] = useState<PeriodPreset>('any');
   const [customFrom, setCustomFrom] = useState('');
@@ -122,9 +122,9 @@ export function SearchForm({
               onChange={(e) => setDepth(Number(e.target.value))}
               className="w-full px-4 py-3 border border-[var(--tosky-border)] rounded-[4px] bg-[var(--tosky-white)] text-[var(--tosky-dark)] focus:outline-none focus:border-[var(--tosky-primary)]"
             >
-              <option value={30}>{t.search.depthFast}</option>
-              <option value={50}>{t.search.depthStd}</option>
-              <option value={100}>{t.search.depthDeep}</option>
+              <option value={8}>{t.search.depthFast}</option>
+              <option value={12}>{t.search.depthStd}</option>
+              <option value={15}>{t.search.depthDeep}</option>
             </select>
           </div>
           <div>

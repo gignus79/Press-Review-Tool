@@ -104,7 +104,7 @@ async function categorizeBatchWithAnthropic(
   try {
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
-      max_tokens: 2800,
+      max_tokens: batch.length >= 20 ? 4500 : 2800,
       system: systemPrompt,
       messages: [
         {
@@ -170,19 +170,13 @@ For each RELEVANT result, return a JSON object with:
 
 Return ONE JSON array with EXACTLY one object per input result, same order. No extra items. Return ONLY valid JSON, no other text.`;
 
-  /** Batch più grandi = meno round-trip; 2 batch in parallelo ≈ metà tempo rispetto al sequenziale. */
-  const batchSize = 16;
-  const categorized: CategorizedResult[] = [];
-
-  for (let i = 0; i < capped.length; i += batchSize * 2) {
-    const batchA = capped.slice(i, i + batchSize);
-    const batchB = capped.slice(i + batchSize, i + batchSize * 2);
-    const [outA, outB] = await Promise.all([
-      categorizeBatchWithAnthropic(anthropic, systemPrompt, keywords, batchA),
-      categorizeBatchWithAnthropic(anthropic, systemPrompt, keywords, batchB),
-    ]);
-    categorized.push(...outA, ...outB);
-  }
-
-  return categorized;
+  /**
+   * Hobby 60s: una sola chiamata Anthropic sui primi N risultati; il resto con euristica
+   * (stesso schema dati, tipi/relevance “Article/Medium” di default).
+   */
+  const ANTHROPIC_HEAD = 24;
+  const head = capped.slice(0, ANTHROPIC_HEAD);
+  const tail = capped.slice(ANTHROPIC_HEAD);
+  const aiRows = await categorizeBatchWithAnthropic(anthropic, systemPrompt, keywords, head);
+  return [...aiRows, ...fallbackFromBatch(tail)];
 }

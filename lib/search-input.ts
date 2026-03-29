@@ -25,7 +25,7 @@ export function sanitizePhraseForQuery(s: string): string {
 
 export function coerceMaxResults(value: unknown, cap = 100): number {
   const n = typeof value === 'number' ? value : Number(value);
-  if (!Number.isFinite(n)) return 50;
+  if (!Number.isFinite(n)) return 12;
   return Math.min(Math.max(1, Math.floor(n)), cap);
 }
 

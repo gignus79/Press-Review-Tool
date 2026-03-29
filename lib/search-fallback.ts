@@ -1,10 +1,14 @@
 import { expandArtistVariants } from '@/lib/artist-variants';
-import { perplexitySearch, type PerplexitySearchResult } from '@/lib/perplexity';
+import {
+  perplexitySearch,
+  PERPLEXITY_MAX_RESULTS_PER_QUERY,
+  type PerplexitySearchResult,
+} from '@/lib/perplexity';
 import { capResultList, MAX_RESULTS_IN_PIPELINE } from '@/lib/result-size-limits';
 import { sanitizePhraseForQuery } from '@/lib/search-input';
 
-/** Con almeno così tanti URL unici, saltiamo i fallback (risparmiamo ~15–30s). */
-const MIN_RESULTS_BEFORE_FALLBACK = 7;
+/** Abbastanza risultati dalla prima ondata → niente seconda ondata Perplexity. */
+const MIN_RESULTS_BEFORE_FALLBACK = 6;
 
 function mergeDedupe(
   primary: PerplexitySearchResult[],
@@ -49,17 +53,7 @@ export function buildFallbackSearchQueries(artist: string, album: string): strin
     out.push(`${b} album music`, `${b} record review`, `${b} album release`);
   }
 
-  return [...new Set(out)].slice(0, 5);
-}
-
-/** Singola ondata “larga” senza filtro lingua. */
-export function buildBroadQueries(artist: string, album: string): string[] {
-  const a = sanitizePhraseForQuery(artist.trim());
-  const b = sanitizePhraseForQuery(album.trim());
-  if (a && b) return [`${a} ${b}`, `${a} ${b} music press`];
-  if (a) return [`${a} music`, `${a}`];
-  if (b) return [`${b} album`, `${b} music`];
-  return [];
+  return [...new Set(out)].slice(0, 3);
 }
 
 /**
@@ -75,7 +69,7 @@ export async function runPerplexityWithFallback(
 
   let raw = capResultList(
     await perplexitySearch(primaryQueries, {
-      maxResults: Math.min(maxResults, 20),
+      maxResults: Math.min(maxResults, PERPLEXITY_MAX_RESULTS_PER_QUERY),
       language,
     }),
     MAX_RESULTS_IN_PIPELINE
@@ -90,26 +84,10 @@ export async function runPerplexityWithFallback(
   );
   if (fallbackQs.length > 0) {
     const extra = await perplexitySearch(fallbackQs, {
-      maxResults: Math.min(maxResults, 20),
+      maxResults: Math.min(maxResults, PERPLEXITY_MAX_RESULTS_PER_QUERY),
       language: undefined,
     });
     raw = capResultList(mergeDedupe(raw, extra), MAX_RESULTS_IN_PIPELINE);
-  }
-
-  if (raw.length >= MIN_RESULTS_BEFORE_FALLBACK) {
-    return raw;
-  }
-
-  /** Ultima rete di sicurezza solo se ancora pochi risultati (2 query, costo contenuto). */
-  if (raw.length < 5) {
-    const broad = buildBroadQueries(artist, album);
-    if (broad.length > 0) {
-      const extra2 = await perplexitySearch(broad, {
-        maxResults: Math.min(maxResults, 20),
-        language: undefined,
-      });
-      raw = capResultList(mergeDedupe(raw, extra2), MAX_RESULTS_IN_PIPELINE);
-    }
   }
 
   return capResultList(raw, MAX_RESULTS_IN_PIPELINE);

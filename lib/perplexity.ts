@@ -8,6 +8,9 @@ import { sanitizePhraseForQuery } from '@/lib/search-input';
 
 const PERPLEXITY_API_URL = 'https://api.perplexity.ai/search';
 
+/** Tetto richieste Perplexity per query (Hobby / latenza). */
+export const PERPLEXITY_MAX_RESULTS_PER_QUERY = 15;
+
 export interface PerplexitySearchResult {
   title: string;
   url: string;
@@ -21,9 +24,8 @@ export interface PerplexitySearchResponse {
   id?: string;
 }
 
-/** Allineato a MAX_PRIMARY_QUERIES: meno round HTTP sotto il tetto Hobby 60s. */
-const MAX_QUERIES_PER_WAVE = 7;
-/** Parallelo aggressivo ma limitato per non saturare Perplexity. */
+/** Una sola ondata da 5 query (Hobby 60s). */
+const MAX_QUERIES_PER_WAVE = 5;
 const PERPLEXITY_CONCURRENCY = 5;
 
 async function fetchPerplexityForQuery(
@@ -33,7 +35,10 @@ async function fetchPerplexityForQuery(
 ): Promise<PerplexitySearchResult[]> {
   const body: Record<string, unknown> = {
     query,
-    max_results: Math.min(options.maxResults ?? 20, 20),
+    max_results: Math.min(
+      options.maxResults ?? 12,
+      PERPLEXITY_MAX_RESULTS_PER_QUERY
+    ),
   };
 
   if (options.language && options.language !== 'multi') {
@@ -71,7 +76,7 @@ export async function perplexitySearch(
     throw new Error('PERPLEXITY_API_KEY is not configured');
   }
 
-  const maxResults = options.maxResults ?? 20;
+  const maxResults = options.maxResults ?? 12;
   const language = options.language;
   const queue = queries.slice(0, MAX_QUERIES_PER_WAVE);
   const allResults: PerplexitySearchResult[] = [];
@@ -98,8 +103,7 @@ export async function perplexitySearch(
   return capResultList(allResults, MAX_RESULTS_IN_PIPELINE);
 }
 
-/** Meno varianti di query = meno latenza; qualità resta alta grazie al parallelo. */
-const MAX_PRIMARY_QUERIES = 7;
+const MAX_PRIMARY_QUERIES = 5;
 
 function pushArtistAlbumQueries(queries: string[], artist: string, album: string) {
   const a = sanitizePhraseForQuery(artist);
