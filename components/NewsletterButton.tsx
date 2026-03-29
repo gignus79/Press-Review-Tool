@@ -14,10 +14,9 @@ export function NewsletterButton({ className = '' }: { className?: string }) {
       target="_blank"
       rel="noopener noreferrer"
       className={clsx(
-        'inline-flex items-center gap-2 rounded-[99px] border-2 border-[#3d3d3d] px-4 py-2 text-sm font-semibold',
-        'text-[#2a2a2a] transition-colors dark:text-zinc-100',
+        'inline-flex items-center gap-2 rounded-[99px] border-2 border-zinc-400 px-4 py-2 text-sm font-semibold',
+        'text-zinc-900 transition-colors dark:border-zinc-500 dark:text-zinc-100',
         'hover:border-[var(--tosky-primary)] hover:bg-[var(--tosky-primary)] hover:text-white',
-        'dark:border-zinc-600',
         'dark:hover:border-[var(--tosky-primary)] dark:hover:bg-[var(--tosky-primary)] dark:hover:text-white',
         'active:scale-[0.98]',
         className

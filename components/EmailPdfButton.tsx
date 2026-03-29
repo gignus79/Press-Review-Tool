@@ -1,8 +1,19 @@
 'use client';
 
 import { useState } from 'react';
-import { useI18n } from '@/lib/i18n/context';
+import { useI18n, locales, type Locale } from '@/lib/i18n/context';
+import { dictionaries } from '@/lib/i18n/dictionaries';
 import { IconMail } from '@/components/icons';
+
+const LOCALE_STORAGE_KEY = 'prt-locale';
+
+/** Lingua effettiva dell’UI (localStorage + contesto), per oggetto/corpo email coerenti. */
+function getEffectiveExportLocale(current: Locale): Locale {
+  if (typeof window === 'undefined') return current;
+  const stored = localStorage.getItem(LOCALE_STORAGE_KEY) as Locale | null;
+  if (stored && locales.includes(stored)) return stored;
+  return current;
+}
 
 function slugPart(s: string | undefined): string {
   if (!s) return 'export';
@@ -33,11 +44,13 @@ export function EmailPdfButton({
   album?: string;
   resultCount: number;
 }) {
-  const { t } = useI18n();
+  const { locale, t } = useI18n();
   const [busy, setBusy] = useState(false);
 
   const openMailWithPdf = async () => {
     setBusy(true);
+    const L = getEffectiveExportLocale(locale);
+    const ex = dictionaries[L].export;
     try {
       const res = await fetch(`/api/export/${exportId}/pdf`, { credentials: 'include' });
       const ct = res.headers.get('content-type') || '';
@@ -55,8 +68,8 @@ export function EmailPdfButton({
       if (typeof navigator !== 'undefined' && navigator.share && navigator.canShare?.({ files: [file] })) {
         await navigator.share({
           files: [file],
-          title: t.export.emailSubject,
-          text: fillExportTemplate(t.export.emailBody, {
+          title: ex.emailSubject,
+          text: fillExportTemplate(ex.emailBody, {
             count: String(resultCount),
             artist: artist || '—',
             album: album || '—',
@@ -74,9 +87,9 @@ export function EmailPdfButton({
       a.remove();
       URL.revokeObjectURL(url);
 
-      const subject = encodeURIComponent(t.export.emailSubject);
+      const subject = encodeURIComponent(ex.emailSubject);
       const body = encodeURIComponent(
-        fillExportTemplate(t.export.emailBody, {
+        fillExportTemplate(ex.emailBody, {
           count: String(resultCount),
           artist: artist || '—',
           album: album || '—',

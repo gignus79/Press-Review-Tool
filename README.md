@@ -72,6 +72,14 @@ Copy **`.env.example`** → **`.env.local`**. Minimum categories:
 | **App** | `NEXT_PUBLIC_APP_URL` (URL canonico del sito, **senza** slash finale — usato per Open Graph / Twitter e link assoluti), optional `FREE_ACCOUNTS_PER_IP_LIMIT`. |
 | **Email (feedback)** | Optional `RESEND_API_KEY` + `RESEND_FROM_EMAIL` — copia notifiche a developer@toskyrecords.com (vedi `.env.example`). |
 
+### Resend (403 “Domain not verified”)
+
+Se le email falliscono con **403** e messaggio tipo *Verify toskyrecords.com or update your from domain*:
+
+1. In **[Resend](https://resend.com)** → **Domains** aggiungi `toskyrecords.com`, inserisci i record **DNS** (SPF/DKIM) che Resend mostra e attendi lo stato **Verified**.
+2. Fino ad allora imposta `RESEND_FROM_EMAIL` a un mittente già consentito da Resend, ad es. `Press Review Tool <onboarding@resend.dev>` (vedi `.env.example`).
+3. Solo dopo la verifica del dominio potrai usare `customercare@toskyrecords.com` o altro indirizzo sul tuo dominio.
+
 ### Social previews (Open Graph / Twitter / Vercel checks)
 
 - Imposta **`NEXT_PUBLIC_APP_URL`** in produzione al dominio pubblico reale (es. `https://press-review-tool.labeltools.toskyrecords.com`). Senza questo valore, `metadataBase` e gli URL di `og:image` / `twitter:image` possono puntare al dominio `.vercel.app` o risultare errati nei tool di anteprima.

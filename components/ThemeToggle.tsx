@@ -16,7 +16,7 @@ export function ThemeToggle() {
 
   if (!mounted) {
     return (
-      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tosky-border)] bg-[var(--tosky-white)]" />
+      <span className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-300 bg-white dark:border-zinc-600 dark:bg-zinc-800" />
     );
   }
 
@@ -26,7 +26,7 @@ export function ThemeToggle() {
     <button
       type="button"
       onClick={() => setTheme(isDark ? 'light' : 'dark')}
-      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-[var(--tosky-border)] bg-[var(--tosky-white)] text-[var(--tosky-dark)] hover:bg-[var(--tosky-light-gray)] transition-colors"
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full border border-zinc-300 bg-white text-zinc-900 hover:bg-zinc-100 transition-colors dark:border-zinc-600 dark:bg-zinc-800 dark:text-zinc-100 dark:hover:bg-zinc-700"
       title={isDark ? t.theme.light : t.theme.dark}
       aria-label={isDark ? t.theme.light : t.theme.dark}
     >

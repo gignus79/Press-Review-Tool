@@ -40,5 +40,10 @@ export async function sendFeedbackEmailToDeveloper(payload: {
   if (!res.ok) {
     const body = await res.text();
     console.warn('[feedback-email] Resend failed', res.status, body);
+    if (res.status === 403) {
+      console.warn(
+        '[feedback-email] 403: dominio “From” non verificato su Resend. Verifica toskyrecords.com in Resend → Domains (DNS), oppure usa temporaneamente RESEND_FROM_EMAIL="Press Review Tool <onboarding@resend.dev>". Vedi README.'
+      );
+    }
   }
 }

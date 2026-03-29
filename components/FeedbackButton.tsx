@@ -36,7 +36,7 @@ export function FeedbackButton({ className = '' }: { className?: string }) {
     <button
       type="button"
       onClick={openPopup}
-      className={`inline-flex items-center gap-2 rounded-[99px] border border-[var(--tosky-border)] bg-[var(--tosky-card)] px-4 py-2 text-sm font-semibold text-[#2a2a2a] hover:bg-[var(--tosky-light-gray)] transition-colors dark:text-zinc-100 ${className}`}
+      className={`inline-flex items-center gap-2 rounded-[99px] border border-zinc-300 bg-white px-4 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100 transition-colors dark:border-zinc-600 dark:bg-zinc-800/80 dark:text-zinc-100 dark:hover:bg-zinc-800 ${className}`}
     >
       {t.nav.feedback}
     </button>

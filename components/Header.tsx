@@ -22,21 +22,21 @@ export function Header() {
 
   return (
     <header
-      className="sticky top-0 z-50 w-full border-b border-[var(--tosky-border)] bg-[var(--tosky-header-bg)]/95 text-[var(--tosky-black)] shadow-[0_0_10px_0_rgba(0,0,0,0.08)] backdrop-blur-sm"
+      className="sticky top-0 z-50 w-full border-b border-zinc-200/90 bg-zinc-100/95 text-zinc-900 shadow-sm backdrop-blur-sm dark:border-zinc-700/90 dark:bg-zinc-900/95 dark:text-zinc-100 dark:shadow-[0_0_12px_rgba(0,0,0,0.35)]"
       style={{ fontFamily: 'var(--font-prompt), sans-serif' }}
     >
       <div className="mx-auto flex min-h-[4.25rem] max-w-6xl flex-col gap-2 px-3 py-2 sm:min-h-[4.75rem] sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-2 sm:px-4 sm:py-1">
         <Link
           href="/"
-          className="flex min-w-0 shrink-0 items-center gap-3 text-[#2a2a2a] dark:text-zinc-100"
+          className="flex min-w-0 shrink-0 items-center gap-3 text-zinc-900 dark:text-zinc-100"
           title={`${t.nav.brandLabel} · ${t.nav.productShort}`}
         >
-          <BrandLogo className="h-14 w-[min(100%,240px)] shrink-0 text-[#2a2a2a] dark:text-zinc-100 sm:h-16 sm:w-[260px]" />
+          <BrandLogo className="h-14 w-[min(100%,240px)] shrink-0 text-zinc-900 dark:text-zinc-100 sm:h-16 sm:w-[260px]" />
           <span className="flex min-w-0 max-w-[11rem] flex-col leading-tight sm:max-w-none">
-            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-[#5c5c5c] dark:text-zinc-400 sm:text-[11px]">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.16em] text-zinc-600 dark:text-zinc-400 sm:text-[11px]">
               {t.nav.productShort}
             </span>
-            <span className="text-[9px] font-medium leading-tight text-[#7a7a7a] dark:text-zinc-500">
+            <span className="text-[9px] font-medium leading-tight text-zinc-500 dark:text-zinc-500">
               {t.nav.poweredBy}
             </span>
           </span>
@@ -45,19 +45,19 @@ export function Header() {
           <nav className="flex max-w-full items-center gap-3 overflow-x-auto pb-0.5 [-ms-overflow-style:none] [scrollbar-width:none] sm:gap-4 sm:pb-0 [&::-webkit-scrollbar]:hidden">
             <Link
               href="/"
-              className="text-sm font-medium text-[var(--tosky-base-text)] hover:text-[var(--tosky-primary)] transition-colors"
+              className="text-sm font-medium text-zinc-800 hover:text-[var(--tosky-primary)] dark:text-zinc-200 dark:hover:text-[var(--tosky-primary)] transition-colors"
             >
               {t.nav.home}
             </Link>
             <Link
               href="/pricing"
-              className="text-sm font-medium text-[var(--tosky-base-text)] hover:text-[var(--tosky-primary)] transition-colors"
+              className="text-sm font-medium text-zinc-800 hover:text-[var(--tosky-primary)] dark:text-zinc-200 dark:hover:text-[var(--tosky-primary)] transition-colors"
             >
               {t.nav.pricing}
             </Link>
             <Link
               href="/dashboard"
-              className="text-sm font-medium text-[var(--tosky-base-text)] hover:text-[var(--tosky-primary)] transition-colors"
+              className="text-sm font-medium text-zinc-800 hover:text-[var(--tosky-primary)] dark:text-zinc-200 dark:hover:text-[var(--tosky-primary)] transition-colors"
             >
               {t.nav.dashboard}
             </Link>

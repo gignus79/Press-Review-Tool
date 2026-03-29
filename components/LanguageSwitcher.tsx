@@ -8,7 +8,7 @@ export function LanguageSwitcher() {
   const { locale, setLocale, t } = useI18n();
 
   return (
-    <div className="flex items-center gap-1 rounded-full border border-[var(--tosky-border)] bg-[var(--tosky-card)] p-0.5">
+    <div className="flex items-center gap-1 rounded-full border border-zinc-300 bg-white p-0.5 dark:border-zinc-600 dark:bg-zinc-800/90">
       <span className="sr-only">{t.lang.label}</span>
       {locales.map((l) => (
         <button
