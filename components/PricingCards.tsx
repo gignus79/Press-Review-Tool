@@ -5,6 +5,7 @@ import { useUser } from '@clerk/nextjs';
 import { useEffect, useMemo, useState } from 'react';
 import { useI18n } from '@/lib/i18n/context';
 import { ManageSubscriptionButton } from '@/components/ManageSubscriptionButton';
+import { assertSafeStripeRedirectUrl } from '@/lib/checkout-redirect';
 
 type Tier = 'free' | 'pro' | 'business';
 
@@ -63,13 +64,33 @@ export function PricingCards() {
       const res = await fetch('/api/stripe/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ priceId }),
       });
-      const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else throw new Error(data.error || 'Checkout failed');
+      const data = (await res.json().catch(() => ({}))) as { url?: unknown; error?: string };
+      if (!res.ok) {
+        throw new Error(data.error || `Request failed (${res.status})`);
+      }
+      const raw = typeof data.url === 'string' ? data.url.trim() : '';
+      if (!raw) {
+        throw new Error(data.error || 'Checkout failed');
+      }
+      let href: string;
+      try {
+        href = assertSafeStripeRedirectUrl(raw);
+      } catch {
+        throw new Error('CHECKOUT_INVALID_REDIRECT');
+      }
+      window.location.assign(href);
     } catch (e) {
-      alert('Errore: ' + (e instanceof Error ? e.message : 'Unknown'));
+      const code = e instanceof Error ? e.message : '';
+      const detail =
+        code === 'CHECKOUT_INVALID_REDIRECT'
+          ? t.pricing.checkoutInvalidRedirect
+          : e instanceof Error
+            ? e.message
+            : t.pricing.checkoutUnknownError;
+      alert(`${t.pricing.errorLabel}: ${detail}`);
     } finally {
       setLoading(null);
     }

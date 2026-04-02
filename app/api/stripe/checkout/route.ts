@@ -1,11 +1,8 @@
-import { auth } from '@clerk/nextjs/server';
+import { auth, currentUser } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
+import { getSiteUrl } from '@/lib/site-url';
 import { stripe } from '@/lib/stripe';
-
-const PRICE_IDS: Record<string, string> = {
-  pro: process.env.STRIPE_PRESSREVIEW_PRO_PRICE_ID || '',
-  business: process.env.STRIPE_PRESSREVIEW_BUSINESS_PRICE_ID || '',
-};
+import { resolveStripeCheckoutPriceId } from '@/lib/stripe-checkout';
 
 export async function POST(req: Request) {
   try {
@@ -18,25 +15,57 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Stripe not configured' }, { status: 503 });
     }
 
-    const { priceId } = await req.json();
-    const actualPriceId = typeof priceId === 'string' ? PRICE_IDS[priceId] || priceId : '';
-
-    if (!actualPriceId) {
-      return NextResponse.json({ error: 'Invalid price' }, { status: 400 });
+    let body: unknown;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const actualPriceId = resolveStripeCheckoutPriceId(body);
+    if (!actualPriceId) {
+      return NextResponse.json(
+        { error: 'Invalid price or missing STRIPE_PRESSREVIEW_*_PRICE_ID' },
+        { status: 400 }
+      );
+    }
+
+    const baseUrl = getSiteUrl().replace(/\/$/, '');
+    const successUrl = `${baseUrl}/dashboard?upgraded=true`;
+    const cancelUrl = `${baseUrl}/pricing`;
+    try {
+      new URL(successUrl);
+      new URL(cancelUrl);
+    } catch {
+      return NextResponse.json({ error: 'Invalid NEXT_PUBLIC_APP_URL or site URL' }, { status: 500 });
+    }
+
+    const clerkUser = await currentUser();
+    const customerEmail =
+      clerkUser?.primaryEmailAddress?.emailAddress ??
+      clerkUser?.emailAddresses?.[0]?.emailAddress ??
+      undefined;
 
     const session = await stripe.checkout.sessions.create({
       mode: 'subscription',
       line_items: [{ price: actualPriceId, quantity: 1 }],
-      success_url: `${baseUrl}/dashboard?upgraded=true`,
-      cancel_url: `${baseUrl}/pricing`,
+      success_url: successUrl,
+      cancel_url: cancelUrl,
+      customer_email: customerEmail || undefined,
       metadata: { clerkUserId: userId },
       subscription_data: { metadata: { clerkUserId: userId } },
     });
 
-    return NextResponse.json({ url: session.url });
+    const url = session.url?.trim();
+    if (!url) {
+      console.error('Checkout: session created without url', session.id);
+      return NextResponse.json(
+        { error: 'Checkout session did not return a redirect URL' },
+        { status: 500 }
+      );
+    }
+
+    return NextResponse.json({ url });
   } catch (e) {
     console.error('Checkout error:', e);
     return NextResponse.json(

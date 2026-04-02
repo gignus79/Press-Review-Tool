@@ -99,6 +99,10 @@ export const dictionaries = {
       currentPlan: 'Piano attuale',
       currentPlanActive: 'Piano attivo',
       manageSubscription: 'Gestisci abbonamento',
+      errorLabel: 'Errore',
+      checkoutInvalidRedirect:
+        'Link di pagamento non valido. Riprova o contatta il supporto se il problema persiste.',
+      checkoutUnknownError: 'Errore sconosciuto',
       freeDetails: 'Uso personale e test iniziale. Nessuna carta richiesta.',
       proDetails: 'Per artisti/etichette attive: più volume, export completi e priorità.',
       businessDetails: 'Per team e agenzie: volumi alti, API e supporto prioritario.',
@@ -322,6 +326,10 @@ export const dictionaries = {
       currentPlan: 'Current plan',
       currentPlanActive: 'Active plan',
       manageSubscription: 'Manage subscription',
+      errorLabel: 'Error',
+      checkoutInvalidRedirect:
+        'Invalid payment link. Try again or contact support if this keeps happening.',
+      checkoutUnknownError: 'Unknown error',
       freeDetails: 'Best for personal use and initial testing. No credit card required.',
       proDetails: 'For active artists/labels: higher volume, full exports and priority.',
       businessDetails: 'For teams/agencies: high volumes, API access and priority support.',
@@ -545,6 +553,10 @@ export const dictionaries = {
       currentPlan: 'Plan actual',
       currentPlanActive: 'Plan activo',
       manageSubscription: 'Gestionar suscripcion',
+      errorLabel: 'Error',
+      checkoutInvalidRedirect:
+        'Enlace de pago no válido. Inténtalo de nuevo o contacta con soporte si continúa.',
+      checkoutUnknownError: 'Error desconocido',
       freeDetails: 'Ideal para uso personal y pruebas iniciales. Sin tarjeta.',
       proDetails: 'Para artistas/sellos activos: más volumen, exportes completos y prioridad.',
       businessDetails: 'Para equipos/agencias: gran volumen, API y soporte prioritario.',
@@ -768,6 +780,10 @@ export const dictionaries = {
       currentPlan: 'Offre actuelle',
       currentPlanActive: 'Offre active',
       manageSubscription: "Gérer l'abonnement",
+      errorLabel: 'Erreur',
+      checkoutInvalidRedirect:
+        'Lien de paiement invalide. Réessayez ou contactez le support si le problème continue.',
+      checkoutUnknownError: 'Erreur inconnue',
       freeDetails: 'Idéal pour usage personnel et premiers tests. Sans carte.',
       proDetails: 'Pour artistes/labels actifs : plus de volume, exports complets et priorité.',
       businessDetails: 'Pour équipes/agences : gros volume, API et support prioritaire.',

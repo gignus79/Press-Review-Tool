@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { assertSafeStripeRedirectUrl } from '@/lib/checkout-redirect';
 
 type ManageSubscriptionButtonProps = {
   label: string;
@@ -21,7 +22,8 @@ export function ManageSubscriptionButton({ label, className = '' }: ManageSubscr
       if (!res.ok || !data.url) {
         throw new Error(data.error || 'Unable to open subscription management');
       }
-      window.location.href = data.url;
+      const href = assertSafeStripeRedirectUrl(data.url);
+      window.location.assign(href);
     } catch (e) {
       alert(e instanceof Error ? e.message : 'Unable to open subscription management');
     } finally {

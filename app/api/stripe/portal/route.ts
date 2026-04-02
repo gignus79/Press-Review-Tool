@@ -1,6 +1,7 @@
 import { auth } from '@clerk/nextjs/server';
 import { NextResponse } from 'next/server';
 import { ensureSchema, sql } from '@/lib/db';
+import { getSiteUrl } from '@/lib/site-url';
 import { stripe } from '@/lib/stripe';
 
 export async function POST() {
@@ -26,10 +27,17 @@ export async function POST() {
       return NextResponse.json({ error: 'No active subscription to manage' }, { status: 400 });
     }
 
-    const baseUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+    const baseUrl = getSiteUrl().replace(/\/$/, '');
+    const returnUrl = `${baseUrl}/pricing`;
+    try {
+      new URL(returnUrl);
+    } catch {
+      return NextResponse.json({ error: 'Invalid site URL configuration' }, { status: 500 });
+    }
+
     const session = await stripe.billingPortal.sessions.create({
       customer: user.stripe_customer_id,
-      return_url: `${baseUrl}/pricing`,
+      return_url: returnUrl,
     });
 
     return NextResponse.json({ url: session.url });
